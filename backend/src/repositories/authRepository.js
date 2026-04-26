@@ -1,8 +1,8 @@
-const db = require('/src/config/db');
+const db = require('../config/db');
 
 const findUserByEmail = async (email) => {
     const result = await db.query('SELECT * FROM users WHERE email = $1', [email]);
-    return result[0] || null;
+    return result.rows[0] || null  // tambahkan .rows
 }
 
 const findUserById = async (id) => {

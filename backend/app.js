@@ -4,15 +4,17 @@ const cors = require('cors')
 const helmet = require('helmet')
 const errorHandler = require('./src/middleware/errorHandler')
 const {testConnection} = require('./src/config/db')
+const authRoute = require('./src/routes/auth')
 
 const app = express()
 
+app.use(express.json())
 app.use(helmet())
 app.use(cors())
-app.use(express.json())
+app.use(express.urlencoded({ extended: true })); 
 
 // Routes
-
+app.use('/api/auth', authRoute);
 
 // Health check
 app.get('/', (req, res) => {
