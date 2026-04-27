@@ -6,6 +6,7 @@ const errorHandler = require('./src/middleware/errorHandler')
 const {testConnection} = require('./src/config/db')
 const authRoute = require('./src/routes/auth')
 const meetingRoute = require('./src/routes/meeting');
+const noteRoute = require('./src/routes/note');
 
 const app = express()
 
@@ -17,6 +18,7 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use('/api/auth', authRoute);
 app.use('/api/meetings', meetingRoute);
+app.use('/api/meetings/:id/notes', noteRoute);
 
 // Health check
 app.get('/', (req, res) => {
