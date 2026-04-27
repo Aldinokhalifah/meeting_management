@@ -5,6 +5,7 @@ const helmet = require('helmet')
 const errorHandler = require('./src/middleware/errorHandler')
 const {testConnection} = require('./src/config/db')
 const authRoute = require('./src/routes/auth')
+const meetingRoute = require('./src/routes/meeting');
 
 const app = express()
 
@@ -15,6 +16,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/api/auth', authRoute);
+app.use('/api/meetings', meetingRoute);
 
 // Health check
 app.get('/', (req, res) => {

@@ -39,4 +39,10 @@ const getMe = async (userId) => {
     return user;
 }
 
-module.exports = { register, login, getMe };
+const logout = async (userId) => {
+    // Untuk JWT stateless, logout dilakukan di client-side dengan menghapus token
+    // Server hanya return success message
+    return { message: 'Logout berhasil' };
+}
+
+module.exports = { register, login, getMe, logout };

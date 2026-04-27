@@ -9,6 +9,11 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
+-- 1. Indexing untuk Tabel Users
+-- Email sudah otomatis di-index karena UNIQUE constraint.
+-- Index pada 'name' berguna jika ada fitur search user berdasarkan nama.
+CREATE INDEX idx_users_name ON users (name);
+
 CREATE TABLE meetings (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title VARCHAR(200) NOT NULL,
@@ -20,6 +25,15 @@ CREATE TABLE meetings (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
+-- 2. Indexing untuk Tabel Meetings
+-- Mempercepat pencarian meeting berdasarkan pembuat atau status (misal: cari meeting 'ongoing').
+CREATE INDEX idx_meetings_created_by ON meetings (created_by);
+CREATE INDEX idx_meetings_status ON meetings (status);
+-- Penting untuk sorting berdasarkan waktu meeting.
+CREATE INDEX idx_meetings_scheduled_at ON meetings (scheduled_at);
+-- Untuk mempermudah tracking histori meeting (self-reference).
+CREATE INDEX idx_meetings_previous_id ON meetings (previous_meeting_id);
+
 CREATE TABLE meeting_participants (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     meeting_id UUID REFERENCES meetings(id) ON DELETE CASCADE,
@@ -27,6 +41,11 @@ CREATE TABLE meeting_participants (
     role VARCHAR(20) DEFAULT 'participant' CHECK (role IN ('host', 'secretary', 'participant')),
     UNIQUE(meeting_id, user_id)
 );
+
+-- 3. Indexing untuk Tabel Meeting Participants
+-- Meskipun sudah ada UNIQUE(meeting_id, user_id), eksplisit index pada user_id 
+-- sangat membantu query "tampilkan semua meeting yang diikuti oleh User X".
+CREATE INDEX idx_participants_user_id ON meeting_participants (user_id);
 
 CREATE TABLE meeting_continuation_access (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -37,6 +56,10 @@ CREATE TABLE meeting_continuation_access (
     UNIQUE(continuation_meeting_id, source_meeting_id, user_id)
 );
 
+-- 4. Indexing untuk Tabel Meeting Continuation Access
+CREATE INDEX idx_mca_user_id ON meeting_continuation_access (user_id);
+CREATE INDEX idx_mca_source_meeting ON meeting_continuation_access (source_meeting_id);
+
 CREATE TABLE notes (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     meeting_id UUID REFERENCES meetings(id) ON DELETE CASCADE,
@@ -44,6 +67,12 @@ CREATE TABLE notes (
     created_by UUID REFERENCES users(id) ON DELETE SET NULL,
     updated_at TIMESTAMP DEFAULT NOW()
 );
+
+-- 5. Indexing untuk Tabel Notes
+-- Foreign key indexing wajib agar join meeting -> notes cepat.
+CREATE INDEX idx_notes_meeting_id ON notes (meeting_id);
+-- Index GIN pada JSONB sangat powerful jika kamu sering melakukan filter/search di dalam isi content.
+CREATE INDEX idx_notes_content_gin ON notes USING GIN (content);
 
 CREATE TABLE action_items (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -55,3 +84,13 @@ CREATE TABLE action_items (
     status VARCHAR(20) DEFAULT 'open' CHECK (status IN ('open', 'done', 'carried_over')),
     created_at TIMESTAMP DEFAULT NOW()
 );
+
+-- 6. Indexing untuk Tabel Action Items
+-- Foreign keys
+CREATE INDEX idx_action_items_meeting_id ON action_items (meeting_id);
+CREATE INDEX idx_action_items_assigned_to ON action_items (assigned_to);
+-- Mempercepat query "tugas yang deadline-nya sudah dekat" atau "tugas yang masih open".
+CREATE INDEX idx_action_items_due_date ON action_items (due_date);
+CREATE INDEX idx_action_items_status ON action_items (status);
+-- Tracking item yang dibawa dari meeting sebelumnya.
+CREATE INDEX idx_action_items_carried_from ON action_items (carried_from_id);

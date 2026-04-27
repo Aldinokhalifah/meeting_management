@@ -22,7 +22,7 @@ const login = async (req, res, next) => {
         const result = await authService.login({ email, password });
         res.status(200).json({ message: 'Login berhasil', data: result });
     } catch (err) {
-        res.status(500).json({ message: 'Gagal registrasi', error: err.message });
+        res.status(500).json({ message: 'Gagal login', error: err.message });
     }
 }
 
@@ -41,4 +41,13 @@ const getMe = async (req, res, next) => {
     }
 }
 
-module.exports = { register, login, getMe };
+const logout = async (req, res, next) => {
+    try {
+        const result = await authService.logout(req.user.id);
+        res.status(200).json({ message: result.message });
+    } catch (err) {
+        res.status(500).json({ message: 'Gagal logout', error: err.message });
+    }
+}
+
+module.exports = { register, login, getMe, logout };
