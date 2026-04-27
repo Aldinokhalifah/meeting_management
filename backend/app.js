@@ -7,6 +7,7 @@ const {testConnection} = require('./src/config/db')
 const authRoute = require('./src/routes/auth')
 const meetingRoute = require('./src/routes/meeting');
 const noteRoute = require('./src/routes/note');
+const actionItemRoute = require('./src/routes/actionItem');
 
 const app = express()
 
@@ -19,6 +20,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth', authRoute);
 app.use('/api/meetings', meetingRoute);
 app.use('/api/meetings/:id/notes', noteRoute);
+app.use('/api/meetings/:id/action-items', actionItemRoute);
 
 // Health check
 app.get('/', (req, res) => {
