@@ -10,20 +10,6 @@ const createActionItem = async ({ meeting_id, description, assigned_to, due_date
     return result.rows[0];
 }
 
-const getActionItemsByMeetingId = async (meeting_id) => {
-    const result = await db.query(
-        `SELECT ai.*, 
-                u.name as assigned_to_name,
-                u.email as assigned_to_email
-        FROM action_items ai
-        LEFT JOIN users u ON ai.assigned_to = u.id
-        WHERE ai.meeting_id = $1
-        ORDER BY ai.created_at ASC`,
-        [meeting_id]
-    );
-    return result.rows;
-}
-
 const getActionItemById = async (id) => {
     const result = await db.query(
         `SELECT id, meeting_id, carried_from_id, description, assigned_to, due_date, status, created_at FROM action_items WHERE id = $1`,
@@ -56,6 +42,28 @@ const getOpenActionItemsByMeetingId = async (meeting_id) => {
         WHERE meeting_id = $1 AND status = 'open'`,
         [meeting_id]
     );
+    return result.rows;
+}
+
+const getActionItemsByMeetingId = async (meeting_id, status = null) => {
+    const values = [meeting_id]
+    let query = `
+        SELECT ai.*, 
+            u.name as assigned_to_name,
+            u.email as assigned_to_email
+        FROM action_items ai
+        LEFT JOIN users u ON ai.assigned_to = u.id
+        WHERE ai.meeting_id = $1`;
+
+    // Tambah filter status kalau ada
+    if (status) {
+        values.push(status);
+        query += ` AND ai.status = $2`;
+    }
+
+    query += ` ORDER BY ai.created_at ASC`;
+
+    const result = await db.query(query, values);
     return result.rows;
 }
 

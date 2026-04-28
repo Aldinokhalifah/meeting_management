@@ -2,6 +2,13 @@ const actionItemsRepo = require('../repositories/actionItemRepository')
 const meetingRepo = require('../repositories/meetingRepository')
 
 const createActionItem = async ({ meeting_id, description, assigned_to, due_date }, user_id) => {
+        // Validasi due_date tidak di masa lalu
+    if (due_date) {
+        const isValidDate = !isNaN(new Date(due_date).getTime());
+        if (!isValidDate) throw new Error('INVALID_DATE_FORMAT');
+        if (new Date(due_date) < new Date().setHours(0, 0, 0, 0)) throw new Error('DUE_DATE_IN_THE_PAST');
+    }
+
     // Cek meeting ada
     const meeting = await meetingRepo.getMeetingById(meeting_id);
     if (!meeting) throw new Error('Meeting tidak ditemukan');
@@ -23,16 +30,18 @@ const createActionItem = async ({ meeting_id, description, assigned_to, due_date
     return await actionItemsRepo.createActionItem({ meeting_id, description, assigned_to, due_date });
 }
 
-const getActionItems = async (meeting_id, user_id) => {
-    // Cek meeting ada
+const getActionItems = async (meeting_id, user_id, status = null) => {
     const meeting = await meetingRepo.getMeetingById(meeting_id);
-    if (!meeting) throw new Error('Meeting tidak ditemukan');
+    if (!meeting) throw new Error('MEETING_NOT_FOUND');
 
-    // Cek user adalah peserta
     const participant = await meetingRepo.isParticipant(meeting_id, user_id);
-    if (!participant) throw new Error('Kamu tidak memiliki akses ke meeting ini');
+    if (!participant) throw new Error('ACCESS_FORBIDDEN');
 
-    return await actionItemsRepo.getActionItemsByMeetingId(meeting_id);
+    // Validasi status kalau diisi
+    const validStatus = ['open', 'done', 'carried_over'];
+    if (status && !validStatus.includes(status)) throw new Error('INVALID_STATUS_FILTER');
+
+    return await actionItemsRepo.getActionItemsByMeetingId(meeting_id, status);
 }
 
 const updateActionItem = async (meeting_id, item_id, body, user_id) => {
@@ -80,5 +89,7 @@ const deleteActionItem = async (meeting_id, item_id, user_id) => {
 
     await actionItemsRepo.deleteActionItem(item_id);
 }
+
+
 
 module.exports = { createActionItem, getActionItems, updateActionItem, deleteActionItem };

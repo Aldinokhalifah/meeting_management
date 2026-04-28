@@ -117,7 +117,33 @@ const removeParticipant = async (meeting_id, user_id, target_user_id) => {
     return { message: 'Participant removed' };
 };
 
+const updateParticipantRole = async (meeting_id, user_id, target_user_id, role) => {
+    const meeting = await meetingRepo.getMeetingById(meeting_id);
+    if (!meeting) throw new Error('MEETING_NOT_FOUND');
+
+    // Hanya host yang boleh update role
+    const requesterRole = await meetingRepo.getUserRole(meeting_id, user_id);
+    if (requesterRole !== 'host') throw new Error('ONLY_HOST_CAN_UPDATE_ROLE');
+
+    // Target harus peserta meeting
+    const isParticipant = await meetingRepo.isParticipant(meeting_id, target_user_id);
+    if (!isParticipant) throw new Error('USER_NOT_PARTICIPANT');
+
+    // Host tidak bisa ubah role diri sendiri
+    if (target_user_id === user_id) throw new Error('HOST_CANNOT_CHANGE_OWN_ROLE');
+
+    // Validasi role yang valid
+    const validRoles = ['secretary', 'participant'];
+    if (!validRoles.includes(role)) throw new Error('INVALID_ROLE');
+
+    const updated = await meetingRepo.updateParticipantRole(meeting_id, target_user_id, role);
+    if (!updated) throw new Error('UPDATE_ROLE_FAILED');
+
+    return updated;
+}
+
 module.exports = {
     createMeeting, getMeetings, getMeetingDetail,
     updateMeeting, deleteMeeting, addParticipant, removeParticipant,
+    updateParticipantRole
 };

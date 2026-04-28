@@ -12,6 +12,7 @@ router.patch('/:id', meetingController.updateMeeting);
 router.delete('/:id', meetingController.deleteMeeting);
 
 router.post('/:id/participants', meetingController.addParticipant);
+router.patch('/:id/participants/:userId', meetingController.updateParticipantRole);
 router.delete('/:id/participants/:userId', meetingController.removeParticipant);
 
 module.exports = router;

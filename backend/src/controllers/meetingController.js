@@ -70,6 +70,23 @@ const removeParticipant = async (req, res, next) => {
     }
 };
 
+const updateParticipantRole = async (req, res, next) => {
+    try {
+        const { role } = req.body;
+        if (!role) return res.status(400).json({ message: 'Role wajib diisi' });
+
+        const updated = await meetingService.updateParticipantRole(
+            req.params.id,
+            req.user.id,
+            req.params.userId,
+            role
+        );
+        res.status(200).json({ message: 'Role peserta berhasil diupdate', data: updated });
+    } catch (err) {
+        next(err);
+    }
+}
+
 module.exports = {
     createMeeting,
     getMeetings,
@@ -78,4 +95,5 @@ module.exports = {
     deleteMeeting,
     addParticipant,
     removeParticipant,
+    updateParticipantRole
 };

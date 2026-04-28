@@ -21,8 +21,9 @@ const createActionItem = async (req, res, next) => {
 
 const getActionItems = async (req, res, next) => {
     try {
-        const items = await actionItemsService.getActionItems(req.params.id, req.user.id);
-        res.status(200).json({ message: 'Berhasil mengambil action items', data: items });
+        const { status } = req.query;
+        const items = await actionItemsService.getActionItems(req.params.id, req.user.id, status || null);
+        res.json({ message: 'Berhasil mengambil action items', data: items });
     } catch (err) {
         if (err.message === 'Meeting tidak ditemukan') return res.status(404).json({ message: err.message });
         if (err.message === 'Kamu tidak memiliki akses ke meeting ini') return res.status(403).json({ message: err.message });

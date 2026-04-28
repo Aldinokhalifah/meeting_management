@@ -3,6 +3,10 @@ const jwt = require('jsonwebtoken')
 const authRepo = require('../repositories/authRepository')
 
 const register = async ({name, email, password}) => {
+    // Validasi format email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) throw new Error('INVALID_EMAIL_FORMAT');
+
     const existingEmail = await authRepo.findUserByEmail(email);
     if(existingEmail) {
         throw {
@@ -10,6 +14,15 @@ const register = async ({name, email, password}) => {
             message: 'Email sudah terdaftar'
         };
     }
+
+    // Validasi panjang password
+    if (password.length < 6) throw new Error('PASSWORD_TOO_SHORT');
+
+    // Validasi name tidak boleh hanya spasi
+    if (!name.trim()) throw new Error('INVALID_NAME');
+
+    const existing = await authRepo.findUserByEmail(email);
+    if (existing) throw new Error('EMAIL_ALREADY_EXISTS');
 
     const password_hash = await bcrypt.hash(password, 10);
     const user = await authRepo.createUser({ name, email, password_hash });  // jadikan object

@@ -114,8 +114,20 @@ const checkScheduleConflict = async (user_id, scheduled_at, end_time) => {
     return result.rows.map(row => row.user_id);
 }
 
+const updateParticipantRole = async (meeting_id, user_id, role) => {
+    const result = await db.query(
+        `UPDATE meeting_participants
+        SET role = $1
+        WHERE meeting_id = $2 AND user_id = $3
+        RETURNING *`,
+        [role, meeting_id, user_id]
+    );
+    return result.rows[0] || null;
+}
+
 module.exports = {
     createMeeting, addParticipant, getMeetingByUser, getMeetingById, 
     getParticipantsByMeetingId, isParticipant, getUserRole, 
-    updateMeeting, deleteMeeting, removeParticipant, checkScheduleConflict
+    updateMeeting, deleteMeeting, removeParticipant,
+    checkScheduleConflict, updateParticipantRole
 };
