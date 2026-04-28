@@ -22,7 +22,8 @@ const addParticipant = async ({ meeting_id, user_id, role = 'participant' }) => 
 
 const getMeetingByUser = async (user_id) => {
     const result = await db.query(
-        `SELECT m.*, mp.role as my_role
+        `SELECT m.id, m.title, m.description, m.scheduled_at, m.end_time, m.location,
+                m.status, m.created_by, m.previous_meeting_id, m.created_at, mp.role as my_role
         FROM meetings m
         JOIN meeting_participants mp ON m.id = mp.meeting_id
         WHERE mp.user_id = $1

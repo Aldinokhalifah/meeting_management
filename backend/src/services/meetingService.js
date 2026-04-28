@@ -4,6 +4,14 @@ const authRepo = require('../repositories/authRepository');
 const createMeeting = async ({ title, description, scheduled_at, end_time, location, participant_ids = [], previous_meeting_id = null }, created_by) => {
     if (!title || !scheduled_at) throw new Error('TITLE_AND_SCHEDULE_REQUIRED');
 
+    // Validasi end_time harus lebih besar dari scheduled_at
+    if (new Date(end_time) <= new Date(scheduled_at)) throw new Error('END_TIME_BEFORE_START_TIME');
+
+    // Validasi scheduled_at tidak di masa lalu
+    if (new Date(scheduled_at) < new Date()) throw new Error('SCHEDULE_IN_THE_PAST');
+
+
+
     // Cek bentrok jadwal jika end_time diisi
     if (end_time) {
         const allConflictIds = [];
@@ -50,6 +58,15 @@ const updateMeeting = async (meeting_id, user_id, body) => {
 
     const role = await meetingRepo.getUserRole(meeting_id, user_id);
     if (role !== 'host') throw new Error('ONLY_HOST_CAN_UPDATE');
+
+    // Ambil nilai akhir scheduled_at & end_time setelah update
+    const final_scheduled_at = body.scheduled_at || meeting.scheduled_at;
+    const final_end_time = body.end_time || meeting.end_time;
+
+    // Validasi end_time harus lebih besar dari scheduled_at
+    if (final_end_time && new Date(final_end_time) <= new Date(final_scheduled_at)) {
+        throw new Error('END_TIME_BEFORE_START_TIME');
+    }
 
     return await meetingRepo.updateMeeting(meeting_id, body);
 };
