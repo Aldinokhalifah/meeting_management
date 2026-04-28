@@ -34,6 +34,13 @@ CREATE INDEX idx_meetings_scheduled_at ON meetings (scheduled_at);
 -- Untuk mempermudah tracking histori meeting (self-reference).
 CREATE INDEX idx_meetings_previous_id ON meetings (previous_meeting_id);
 
+-- Tambah di tabel meetings
+ALTER TABLE meetings ADD COLUMN end_time TIMESTAMP;
+ALTER TABLE meetings ADD COLUMN location VARCHAR(255);
+
+-- Index untuk end_time (berguna untuk query cek bentrok)
+CREATE INDEX idx_meetings_end_time ON meetings (end_time);
+
 CREATE TABLE meeting_participants (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     meeting_id UUID REFERENCES meetings(id) ON DELETE CASCADE,

@@ -7,86 +7,77 @@ const createContinuation = async ({
     title,
     description,
     scheduled_at,
-    participant_ids = [],   // [{ user_id, role, access_level }]
+    end_time,
+    location,
+    participant_ids = [],
 }, user_id) => {
 
-    // Cek meeting sumber ada
     const sourceMeeting = await meetingRepo.getMeetingById(source_meeting_id);
-    if (!sourceMeeting) throw new Error('Meeting sebelumnya tidak ditemukan');
+    if (!sourceMeeting) throw new Error('SOURCE_MEETING_NOT_FOUND');
 
-    // Hanya host yang boleh buat continuation
     const role = await meetingRepo.getUserRole(source_meeting_id, user_id);
-    if (role !== 'host') throw new Error('Hanya host yang dapat membuat meeting lanjutan');
+    if (role !== 'host') throw new Error('ONLY_HOST_CAN_CREATE_CONTINUATION');
 
-    // Validasi field wajib
-    if (!title || !scheduled_at) throw new Error('Title dan jadwal wajib diisi');
+    if (!title || !scheduled_at) throw new Error('TITLE_AND_SCHEDULE_REQUIRED');
 
-    // Validasi access_level yang dikirim
-    const validAccessLevels = ['full', 'summary_only', 'none'];
+    const validAccessLevels = ['full', 'summary_only', 'none']
     for (const p of participant_ids) {
-        if (p.access_level && !validAccessLevels.includes(p.access_level)) {
-            throw new Error(`Access level tidak valid untuk user ${p.user_id}`);
+            if (p.access_level && !validAccessLevels.includes(p.access_level)) {
+                throw new Error('INVALID_ACCESS_LEVEL');
         }
     }
 
-    // Buat meeting baru dengan previous_meeting_id
+    // Cek bentrok jadwal jika end_time diisi
+    if (end_time) {
+        const allConflictIds = [];
+        for (const p of [{ user_id }, ...participant_ids]) {
+            const conflictUserIds = await meetingRepo.checkScheduleConflict(p.user_id, scheduled_at, end_time);
+            allConflictIds.push(...conflictUserIds);
+        }
+        if (allConflictIds.length > 0) throw new Error(`SCHEDULE_CONFLICT_USERS_[${[...new Set(allConflictIds)].join(', ')}]`);
+    }
+
     const newMeeting = await meetingRepo.createMeeting({
         title,
         description,
         scheduled_at,
+        end_time,
+        location,
         created_by: user_id,
         previous_meeting_id: source_meeting_id,
     });
 
-    // Tambah host sebagai peserta meeting baru
     await meetingRepo.addParticipant({
         meeting_id: newMeeting.id,
         user_id,
         role: 'host',
     });
 
-    // Tambah peserta lain + set access level ke meeting lama
     for (const p of participant_ids) {
-        if (p.user_id === user_id) continue; // skip kalau host
+        if (p.user_id === user_id) continue;
 
-        // Tambah sebagai peserta meeting baru
         await meetingRepo.addParticipant({
             meeting_id: newMeeting.id,
             user_id: p.user_id,
             role: p.role || 'participant',
         });
 
-        // Cek apakah user ini peserta di meeting lama
         const wasParticipant = await meetingRepo.isParticipant(source_meeting_id, p.user_id);
 
-        if (wasParticipant) {
-        // Peserta lama otomatis full access
-            await continuationRepo.setAccessLevel({
-                continuation_meeting_id: newMeeting.id,
-                source_meeting_id,
-                user_id: p.user_id,
-                access_level: 'full',
-            });
-        } else {
-        // Peserta baru → pakai access_level dari request, default 'none'
-            await continuationRepo.setAccessLevel({
-                continuation_meeting_id: newMeeting.id,
-                source_meeting_id,
-                user_id: p.user_id,
-                access_level: p.access_level || 'none',
-            });
-        }
+        await continuationRepo.setAccessLevel({
+        continuation_meeting_id: newMeeting.id,
+        source_meeting_id,
+        user_id: p.user_id,
+        access_level: wasParticipant ? 'full' : (p.access_level || 'none'),
+        });
     }
 
-    // Carry-over action items yang masih open dari meeting lama
     const openItems = await actionItemsRepo.getOpenActionItemsByMeetingId(source_meeting_id);
     const carriedItems = [];
 
     for (const item of openItems) {
-        // Update status item lama jadi carried_over
         await actionItemsRepo.updateActionItem(item.id, { status: 'carried_over' });
 
-        // Buat action item baru di meeting baru
         const newItem = await actionItemsRepo.createActionItem({
             meeting_id: newMeeting.id,
             description: item.description,
@@ -99,11 +90,7 @@ const createContinuation = async ({
 
     const participants = await meetingRepo.getParticipantsByMeetingId(newMeeting.id);
 
-    return {
-        ...newMeeting,
-        participants,
-        carried_action_items: carriedItems,
-    };
+    return { ...newMeeting, participants, carried_action_items: carriedItems };
 }
 
 const getPreviousMeeting = async (continuation_meeting_id, user_id) => {
