@@ -1,8 +1,8 @@
 const meetingRepo = require('../repositories/meetingRepository');
 const authRepo = require('../repositories/authRepository');
 
-const createMeeting = async ({ title, description, scheduled_at, participant_ids = [] }, created_by) => {
-    const meeting = await meetingRepo.createMeeting({ title, description, scheduled_at, created_by });
+const createMeeting = async ({ title, description, scheduled_at, participant_ids = [], previous_meeting_id = null }, created_by) => {
+    const meeting = await meetingRepo.createMeeting({ title, description, scheduled_at, created_by, previous_meeting_id });
 
     // Tambah host sebagai peserta
     await meetingRepo.addParticipant({ meeting_id: meeting.id, user_id: created_by, role: 'host' });

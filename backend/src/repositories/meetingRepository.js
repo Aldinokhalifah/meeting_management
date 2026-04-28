@@ -1,11 +1,11 @@
 const db = require('../config/db');
 
-const createMeeting = async ({ title, description, scheduled_at, created_by }) => {
+const createMeeting = async ({ title, description, scheduled_at, created_by, previous_meeting_id = null }) => {
     const result = await db.query(
-        `INSERT INTO meetings (title, description, scheduled_at, created_by)
-        VALUES ($1, $2, $3, $4)
+        `INSERT INTO meetings (title, description, scheduled_at, created_by, previous_meeting_id)
+        VALUES ($1, $2, $3, $4, $5)
         RETURNING *`,
-        [title, description, scheduled_at, created_by]
+        [title, description, scheduled_at, created_by, previous_meeting_id]
     );
     return result.rows[0];
 };
@@ -70,16 +70,17 @@ const getUserRole = async (meeting_id, user_id) => {
     return result.rows[0]?.role || null;
 };
 
-const updateMeeting = async (meeting_id, { title, description, scheduled_at, status }) => {
+const updateMeeting = async (meeting_id, { title, description, scheduled_at, status, previous_meeting_id }) => {
     const result = await db.query(
         `UPDATE meetings
         SET title = COALESCE($1, title),
             description = COALESCE($2, description),
             scheduled_at = COALESCE($3, scheduled_at),
-            status = COALESCE($4, status)
-        WHERE id = $5
+            status = COALESCE($4, status),
+            previous_meeting_id = COALESCE($5, previous_meeting_id)
+        WHERE id = $6
         RETURNING *`,
-        [title, description, scheduled_at, status, meeting_id]
+        [title, description, scheduled_at, status, previous_meeting_id, meeting_id]
     );
     return result.rows[0];
 };

@@ -2,9 +2,9 @@ const meetingService = require('../services/meetingService');
 
 const createMeeting = async (req, res, next) => {
     try {
-        const { title, description, scheduled_at, participant_ids } = req.body;
+        const { title, description, scheduled_at, participant_ids, previous_meeting_id } = req.body;
         const meeting = await meetingService.createMeeting(
-        { title, description, scheduled_at, participant_ids },
+        { title, description, scheduled_at, participant_ids, previous_meeting_id },
         req.user.id
         );
         res.status(201).json({ message: 'Meeting berhasil dibuat', data: meeting });
