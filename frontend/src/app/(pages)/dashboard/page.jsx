@@ -1,6 +1,13 @@
+import Sidebar from "@/app/components/SideBar";
+
 export default function Dashboard() {
 
     return(
-        <h1>Dashboard</h1>
+        <>
+            <Sidebar />
+            <main>
+                <h1>Dashboard</h1>
+            </main>
+        </>
     )
 }
