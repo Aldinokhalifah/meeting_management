@@ -1,5 +1,5 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getActionItems, createActionItem, updateActionItem, deleteActionItem, } from '@/services/actionItems'
+import { useQueries, useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { getActionItems, createActionItem, updateActionItem, deleteActionItem, } from '@/services/actionItem'
 import toast from 'react-hot-toast'
 
 export const useActionItems = (meeting_id, status = null) => {
@@ -9,6 +9,20 @@ export const useActionItems = (meeting_id, status = null) => {
         enabled: !!meeting_id,
         refetchInterval: 10000,
         select: (data) => data.data,
+    })
+}
+
+export const useActionItemsQueries = (meetingIds = [], status = null) => {
+    const ids = meetingIds.filter(Boolean)
+
+    return useQueries({
+        queries: ids.map((id) => ({
+            queryKey: ['action-items', id, status],
+            queryFn: () => getActionItems(id, status),
+            enabled: !!id,
+            refetchInterval: 10000,
+            select: (data) => data?.data ?? [],
+        })),
     })
 }
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { LayoutDashboard, CalendarDays, User, LogOut, Menu, X, ChevronRight } from 'lucide-react'
@@ -35,7 +35,7 @@ export default function Sidebar() {
     return (
         <>
         {/* ── Mobile top bar ── */}
-        <div className="md:hidden fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 h-14 bg-white border-b border-gray-200">
+        <div className="lg:hidden sticky top-0 left-0 right-0 z-40 flex items-center justify-between p-4 h-14 bg-white border-b border-gray-200">
             <div className="flex items-center gap-2">
                     <Link href="/dashboard" className="flex items-center gap-2">
                     <Image
@@ -45,7 +45,7 @@ export default function Sidebar() {
                         alt="Probesco logo"
                         className="rounded-md shadow-md"
                     />
-                    <span className="font-bold text-sm md:text-lg text-gray-900">
+                    <span className="font-bold text-sm lg:text-lg text-gray-900">
                         Meeting Management
                     </span>
                     </Link>
@@ -61,7 +61,7 @@ export default function Sidebar() {
         {/* ── Mobile overlay ── */}
         {mobileOpen && (
             <div
-            className="md:hidden fixed inset-0 z-40 bg-black/40"
+            className="lg:hidden fixed inset-0 z-40 bg-black/40"
             onClick={() => setMobileOpen(false)}
             />
         )}
@@ -69,7 +69,7 @@ export default function Sidebar() {
         {/* ── Mobile drawer ── */}
         <aside
             className={`
-            md:hidden fixed top-0 left-0 z-50 h-full w-64 bg-white border-r border-gray-200
+            lg:hidden fixed top-0 left-0 z-50 h-full w-64 bg-white border-r border-gray-200
             flex flex-col transition-transform duration-300
             ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
             `}
@@ -85,7 +85,7 @@ export default function Sidebar() {
                         alt="Probesco logo"
                         className="rounded-md shadow-md"
                     />
-                    <span className="font-bold text-sm md:text-lg text-gray-900">
+                    <span className="font-bold text-sm lg:text-lg text-gray-900">
                         Meeting Management
                     </span>
                 </Link>
@@ -145,7 +145,7 @@ export default function Sidebar() {
         {/* ── Desktop sidebar ── */}
         <aside
             className={`
-            hidden md:flex flex-col fixed top-0 left-0 h-full bg-white border-r border-gray-200
+            hidden lg:flex flex-col fixed top-0 left-0 h-full bg-white border-r border-gray-200
             transition-all duration-300 z-30
             ${collapsed ? 'w-16' : 'w-56'}
             `}
@@ -228,10 +228,7 @@ export default function Sidebar() {
         </aside>
 
         {/* ── Spacer agar konten tidak tertutup sidebar ── */}
-        <div className={`hidden md:block shrink-0 transition-all duration-300 ${collapsed ? 'w-16' : 'w-56'}`} />
-
-        {/* Spacer mobile top bar */}
-        <div className="md:hidden h-14" />
+        <div className={`hidden lg:block shrink-0 transition-all duration-300 ${collapsed ? 'w-16' : 'w-56'}`} />
         </>
     )
 }
