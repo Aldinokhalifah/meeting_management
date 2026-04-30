@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 // Route yang tidak butuh auth
 const publicRoutes = ['/Login', '/Register'];
 
-export function middleware(request) {
+export function proxy(request) {
     const { pathname } = request.nextUrl;
     const token = request.cookies.get('token')?.value;
 

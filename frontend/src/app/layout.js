@@ -16,7 +16,8 @@ export const metadata = {
   title: "Probesco - Meeting Management",
   description: "Meeting Management App",
   icons: {
-    icon: "/probesco.webp"
+    icon: "/probesco.webp",
+    
   }
 };
 
