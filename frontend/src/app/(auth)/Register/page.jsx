@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import Image from 'next/image'
 import { register } from '@/services/auth'
 import toast from 'react-hot-toast'
 
@@ -64,12 +63,10 @@ export default function RegisterPage() {
                 {/* Logo */}
                 <div className="flex items-center gap-2 mb-4">
                     <Link href="/" className="flex items-center gap-2">
-                    <Image
+                    <img
                         src="/probesco.webp"
-                        width={40}
-                        height={40}
                         alt="Probesco logo"
-                        className="rounded-md shadow-md"
+                        className="rounded-md shadow-md w-10 h-10"
                     />
                     <span className="font-bold text-sm md:text-lg text-gray-900">
                         Probesco - Meeting Management

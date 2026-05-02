@@ -7,7 +7,6 @@ export const useNote = (meeting_id) => {
         queryKey: ['note', meeting_id],
         queryFn: () => getNote(meeting_id),
         enabled: !!meeting_id,
-        refetchInterval: 5000,
         select: (data) => data.data,
     })
 }
@@ -17,7 +16,7 @@ export const useCreateNote = () => {
     return useMutation({
         mutationFn: ({ meeting_id, content }) => createNote(meeting_id, content),
         onSuccess: (_, { meeting_id }) => {
-            toast.success(onSuccess.message);
+            toast.success(_.message);
             queryClient.invalidateQueries({ queryKey: ['note', meeting_id] });
         },
         onError: (err) => {
@@ -31,7 +30,7 @@ export const useUpdateNote = () => {
     return useMutation({
         mutationFn: ({ meeting_id, content }) => updateNote(meeting_id, content),
         onSuccess: (_, { meeting_id }) => {
-            toast.success(onSuccess.message);
+            toast.success(_.message);
             queryClient.invalidateQueries({ queryKey: ['note', meeting_id] });
         },
         onError: (err) => {

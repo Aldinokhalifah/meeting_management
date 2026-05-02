@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { LayoutDashboard, CalendarDays, User, LogOut, Menu, X, ChevronRight } from 'lucide-react'
 import { logout } from '@/services/auth'
-import Image from 'next/image'
 
 const navItems = [
     { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -35,15 +34,13 @@ export default function Sidebar() {
     return (
         <>
         {/* ── Mobile top bar ── */}
-        <div className="lg:hidden sticky top-0 left-0 right-0 z-40 flex items-center justify-between p-4 h-14 bg-white border-b border-gray-200">
+        <div className="lg:hidden fixed top-0 left-0 right-0 z-40 flex items-center justify-between p-4 h-14 bg-white border-b border-gray-200">
             <div className="flex items-center gap-2">
                     <Link href="/dashboard" className="flex items-center gap-2">
-                    <Image
+                    <img
                         src="/probesco.webp"
-                        width={40}
-                        height={40}
                         alt="Probesco logo"
-                        className="rounded-md shadow-md"
+                        className="rounded-md shadow-md w-10 h-10"
                     />
                     <span className="font-bold text-sm lg:text-lg text-gray-900">
                         Meeting Management
@@ -78,12 +75,10 @@ export default function Sidebar() {
             <div className="flex items-center justify-between px-4 h-14 border-b border-gray-100">
             <div className="flex items-center gap-2">
                 <Link href="/dashboard" className="flex items-center gap-2">
-                    <Image
+                    <img
                         src="/probesco.webp"
-                        width={40}
-                        height={40}
                         alt="Probesco logo"
-                        className="rounded-md shadow-md"
+                        className="rounded-md shadow-md w-10 h-10"
                     />
                     <span className="font-bold text-sm lg:text-lg text-gray-900">
                         Meeting Management
@@ -153,12 +148,10 @@ export default function Sidebar() {
             {/* Logo */}
             <div className={`flex items-center h-14 border-b border-gray-100 px-3 ${collapsed ? 'justify-center' : 'gap-2'}`}>
                 <Link href="/dashboard" className="flex items-center gap-2">
-                    <Image
+                    <img
                         src="/probesco.webp"
-                        width={40}
-                        height={40}
                         alt="Probesco logo"
-                        className="rounded-md shadow-md"
+                        className="rounded-md shadow-md w-10 h-10"
                     />
                 </Link>
             {!collapsed && (
