@@ -11,15 +11,13 @@ export default function ParticipantsSection({ meetingId, participants = [], isHo
 
     const handleRemove = (userId) => {
         removeParticipant(
-        { meeting_id: meetingId, user_id: userId },
-        { onSuccess: () => toast.success('Peserta dihapus') }
+            { meeting_id: meetingId, user_id: userId }
         )
     }
 
     const handleRoleChange = (userId, role) => {
         updateRole(
-        { meeting_id: meetingId, user_id: userId, role },
-        { onSuccess: () => toast.success('Role diperbarui') }
+            { meeting_id: meetingId, user_id: userId, role }
         )
     }
 

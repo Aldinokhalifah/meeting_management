@@ -57,7 +57,7 @@ export default function AllMeetings({ meetings = [] }) {
                 Tidak ada meeting
                 </div>
             ) : (
-                <div className="space-y-1 overflow-y-auto h-64">
+                <div className="space-y-1 overflow-y-auto h-48">
                 {filtered.map((m) => {
                     const status = STATUS_STYLE[m.status] ?? STATUS_STYLE.scheduled
                     return (

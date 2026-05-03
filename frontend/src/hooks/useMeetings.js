@@ -25,8 +25,8 @@ export const useCreateMeeting = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (body) => createMeeting(body),
-        onSuccess: () => {
-            toast.success(onSuccess.message);
+        onSuccess: (_) => {
+            toast.success(_.message);
             queryClient.invalidateQueries({ queryKey: ['meetings'] });
         },
         onError: (err) => {
@@ -40,7 +40,7 @@ export const useUpdateMeeting = () => {
     return useMutation({
         mutationFn: ({ id, body }) => updateMeeting(id, body),
         onSuccess: (_, { id }) => {
-            toast.success(onSuccess.message);
+            toast.success(_.message);
             queryClient.invalidateQueries({ queryKey: ['meetings'] });
             queryClient.invalidateQueries({ queryKey: ['meeting', id] });
         },
@@ -54,8 +54,8 @@ export const useDeleteMeeting = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (id) => deleteMeeting(id),
-        onSuccess: () => {
-            toast.success(onSuccess.message);
+        onSuccess: (_) => {
+            toast.success(_.message);
             queryClient.invalidateQueries({ queryKey: ['meetings'] });
         },
         onError: (err) => {
@@ -69,7 +69,7 @@ export const useAddParticipant = () => {
     return useMutation({
         mutationFn: ({ meeting_id, user_id }) => addParticipant(meeting_id, user_id),
         onSuccess: (_, { meeting_id }) => {
-            toast.success(onSuccess.message);
+            toast.success(_.message);
             queryClient.invalidateQueries({ queryKey: ['meeting', meeting_id] });
         },
         onError: (err) => {
@@ -83,7 +83,7 @@ export const useRemoveParticipant = () => {
     return useMutation({
         mutationFn: ({ meeting_id, user_id }) => removeParticipant(meeting_id, user_id),
         onSuccess: (_, { meeting_id }) => {
-            toast.success(onSuccess.message);
+            toast.success(_.message);
             queryClient.invalidateQueries({ queryKey: ['meeting', meeting_id] });
         },
         onError: (err) => {
@@ -97,7 +97,7 @@ export const useUpdateParticipantRole = () => {
     return useMutation({
         mutationFn: ({ meeting_id, user_id, role }) => updateParticipantRole(meeting_id, user_id, role),
         onSuccess: (_, { meeting_id }) => {
-            toast.success(onSuccess.message);
+            toast.success(_.message);
             queryClient.invalidateQueries({ queryKey: ['meeting', meeting_id] });
         },
         onError: (err) => {

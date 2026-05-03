@@ -18,7 +18,7 @@ export default function MeetingHeader({ meeting, myRole, onEdit, onContinue, onD
     return (
         <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-4 mt-12 lg:mt-0">
             {/* Back + Actions */}
-            <div className="flex flex-col lg:flex-row items-center justify-between">
+            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-2">
                 <button
                 onClick={() => router.back()}
                 className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition"

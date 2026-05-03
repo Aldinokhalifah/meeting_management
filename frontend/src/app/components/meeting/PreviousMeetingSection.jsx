@@ -11,8 +11,7 @@ const formatDate = (date) =>
 
 export default function PreviousMeetingSection({ meetingId, previousMeetingId }) {
     const [expanded, setExpanded] = useState(false)
-    const { data, isLoading } = usePreviousMeeting(expanded ? meetingId : null)
-    console.log("data: ", data);
+    const { data, isLoading } = usePreviousMeeting(expanded ? meetingId : null, previousMeetingId)
 
     if (!previousMeetingId) return null
 

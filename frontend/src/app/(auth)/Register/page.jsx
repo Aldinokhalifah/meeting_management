@@ -62,7 +62,7 @@ export default function RegisterPage() {
 
                 {/* Logo */}
                 <div className="flex items-center gap-2 mb-4">
-                    <Link href="/" className="flex items-center gap-2">
+                    <Link href="/dashboard" className="flex items-center gap-2">
                     <img
                         src="/probesco.webp"
                         alt="Probesco logo"

@@ -23,15 +23,13 @@ export default function ActionItemsSection({ meetingId, canEdit, participants = 
     const toggleStatus = (item) => {
         const newStatus = item.status === 'done' ? 'open' : 'done'
         updateItem(
-        { meeting_id: meetingId, item_id: item.id, body: { status: newStatus } },
-        { onSuccess: () => toast.success('Status diperbarui') }
+            { meeting_id: meetingId, item_id: item.id, body: { status: newStatus } }
         )
     }
 
     const handleDelete = (itemId) => {
         deleteItem(
-        { meeting_id: meetingId, item_id: itemId },
-        { onSuccess: () => toast.success('Action item dihapus') }
+            { meeting_id: meetingId, item_id: itemId }
         )
     }
 

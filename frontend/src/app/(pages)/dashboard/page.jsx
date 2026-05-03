@@ -8,11 +8,13 @@ import TodaySchedule from '@/app/components/dashboard/TodaySchedule'
 import AllMeetings from '@/app/components/dashboard/AllMeetings'
 import RoomSection from '@/app/components/dashboard/RoomSection'
 import ActionItemsSection from '@/app/components/dashboard/ActionItemsSection'
+import MeetingFormModal from '@/app/components/meeting/modals/MeetingFormModal'
 import Sidebar from "@/app/components/SideBar";
 
 export default function Dashboard() {
     const { data: meetings = [], isLoading } = useMeetings()
     const [user, setUser] = useState(null)
+    const [showCreateModal, setShowCreateModal] = useState(false)
 
     useEffect(() => {
         const stored = localStorage.getItem('user')
@@ -27,11 +29,17 @@ export default function Dashboard() {
         )
     }
     return(
-        <div className="flex flex-col md:flex-row h-screen w-full">
+        <div className="flex flex-col md:flex-row h-screen w-full bg-white">
             <Sidebar />
             <div className="p-4 md:p-6 space-y-4 max-w-7xl mx-auto">
                 {/* Header */}
-                <DashboardHeader user={user} />
+                <DashboardHeader user={user} onCreateMeeting={() => setShowCreateModal(true)}/>
+                
+                {/* modal */}
+                <MeetingFormModal
+                    isOpen={showCreateModal}
+                    onClose={() => setShowCreateModal(false)}
+                />
 
                 {/* Banner */}
                 <DashboardBanner meetings={meetings} />

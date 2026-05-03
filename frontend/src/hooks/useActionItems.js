@@ -31,7 +31,7 @@ export const useCreateActionItem = () => {
     return useMutation({
         mutationFn: ({ meeting_id, body }) => createActionItem(meeting_id, body),
         onSuccess: (_, { meeting_id }) => {
-            toast.success(onSuccess.message);
+            toast.success(_.message);
             queryClient.invalidateQueries({ queryKey: ['action-items', meeting_id] })
         },
         onError: (err) => {
@@ -45,7 +45,7 @@ export const useUpdateActionItem = () => {
     return useMutation({
         mutationFn: ({ meeting_id, item_id, body }) => updateActionItem(meeting_id, item_id, body),
         onSuccess: (_, { meeting_id }) => {
-            toast.success(onSuccess.message);
+            toast.success(_.message);
             queryClient.invalidateQueries({ queryKey: ['action-items', meeting_id] })
         },
         onError: (err) => {
@@ -59,7 +59,7 @@ export const useDeleteActionItem = () => {
     return useMutation({
         mutationFn: ({ meeting_id, item_id }) => deleteActionItem(meeting_id, item_id),
         onSuccess: (_, { meeting_id }) => {
-            toast.success(onSuccess.message);
+            toast.success(_.message);
             queryClient.invalidateQueries({ queryKey: ['action-items', meeting_id] })
         },
         onError: (err) => {

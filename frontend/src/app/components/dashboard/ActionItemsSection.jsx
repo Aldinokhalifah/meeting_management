@@ -33,7 +33,7 @@ export default function ActionItemsSection({ meetings = [] }) {
                 {allOpenItems.map((item) => (
                 <div
                     key={item.id}
-                    className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-gray-50 transition"
+                    className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-gray-50 transition overflow-y-auto max-h-24"
                 >
                     <div className="w-7 h-7 rounded-full bg-yellow-100 flex items-center justify-center shrink-0 mt-0.5">
                     <span className="text-xs font-medium text-yellow-700">

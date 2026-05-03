@@ -102,8 +102,9 @@ const removeParticipant = async (meeting_id, user_id) => {
 
 const checkScheduleConflict = async (user_id, scheduled_at, end_time) => {
     const result = await db.query(
-        `SELECT DISTINCT mp.user_id FROM meetings m
+        `SELECT DISTINCT u.name FROM meetings m
         JOIN meeting_participants mp ON m.id = mp.meeting_id
+        JOIN users u ON mp.user_id = u.id
         WHERE mp.user_id = $1
         AND m.status NOT IN ('done', 'cancelled')
         AND (
@@ -111,7 +112,7 @@ const checkScheduleConflict = async (user_id, scheduled_at, end_time) => {
         )`,
         [user_id, scheduled_at, end_time]
     );
-    return result.rows.map(row => row.user_id);
+    return result.rows.map(row => row.name);
 }
 
 const updateParticipantRole = async (meeting_id, user_id, role) => {

@@ -8,6 +8,10 @@ import NotesSection from '@/app/components/meeting/NoteSection'
 import ActionItemsSection from '@/app/components/meeting/ActionItemsSection'
 import ParticipantsSection from '@/app/components/meeting/ParticipantsSection'
 import PreviousMeetingSection from '@/app/components/meeting/PreviousMeetingSection'
+import MeetingFormModal from '@/app/components/meeting/modals/MeetingFormModal'
+import AddParticipantModal from '@/app/components/meeting/modals/AddParticipants'
+import AddActionItemModal from '@/app/components/meeting/modals/AddActionItemModal'
+import ContinueMeetingModal from '@/app/components/meeting/modals/ContinueMeetingModal'
 import toast from 'react-hot-toast'
 import Sidebar from "@/app/components/SideBar";
 
@@ -39,7 +43,6 @@ export default function MeetingPage() {
         if (!confirm('Yakin ingin menghapus meeting ini?')) return
         deleteMeeting(id, {
         onSuccess: () => {
-            toast.success('Meeting dihapus')
             router.push('/dashboard')
         },
         })
@@ -58,7 +61,7 @@ export default function MeetingPage() {
     )
 
     return(
-        <div className="flex flex-col md:flex-row h-screen w-full">
+        <div className="flex flex-col md:flex-row w-full bg-white">
             <Sidebar />
             <div className="p-4 md:p-6 space-y-4 max-w-7xl mx-auto">
                 {/* Header */}
@@ -100,12 +103,38 @@ export default function MeetingPage() {
                 {/* Notes Section - Full Width Below */}
                 <NotesSection meetingId={id} canEdit={canEdit} />
 
-                {/* Modals — akan dibuat selanjutnya */}
-                {/* {showEditModal && <EditMeetingModal ... />} */}
-                {/* {showContinueModal && <ContinueMeetingModal ... />} */}
-                {/* {showAddParticipantModal && <AddParticipantModal ... />} */}
-                {/* {showAddActionItemModal && <AddActionItemModal ... />} */}
-
+                {/* Modals */}
+                {showEditModal && (
+                    <MeetingFormModal
+                        isOpen={showEditModal}
+                        onClose={() => setShowEditModal(false)}
+                        meeting={meeting}
+                    />
+                )}
+                {showContinueModal && (
+                    <ContinueMeetingModal
+                        isOpen={showContinueModal}
+                        onClose={() => setShowContinueModal(false)}
+                        meetingId={id}
+                        participants={meeting?.participants ?? []}
+                    />
+                )}
+                {showAddParticipantModal && (
+                    <AddParticipantModal
+                        isOpen={showAddParticipantModal}
+                        onClose={() => setShowAddParticipantModal(false)}
+                        meetingId={id}
+                        existingParticipants={meeting?.participants ?? []}
+                    />
+                )}
+                {showAddActionItemModal && (
+                    <AddActionItemModal
+                        isOpen={showAddActionItemModal}
+                        onClose={() => setShowAddActionItemModal(false)}
+                        meetingId={id}
+                        participants={meeting?.participants ?? []}
+                    />
+                )}
             </div>
         </div>
     )

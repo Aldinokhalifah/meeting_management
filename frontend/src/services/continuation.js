@@ -7,6 +7,6 @@ export const createContinuation = async (meeting_id, body) => {
     });
 }
 
-export const getPreviousMeeting = async (meeting_id) => {
-    return await fetchClient(`/meetings/${meeting_id}/continue/previous`);
+export const getPreviousMeeting = async (meeting_id, previous_meeting_id) => {
+    return await fetchClient(`/meetings/${previous_meeting_id}/continue/${meeting_id}/previous`);
 }

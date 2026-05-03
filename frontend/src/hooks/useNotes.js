@@ -6,6 +6,7 @@ export const useNote = (meeting_id) => {
     return useQuery({
         queryKey: ['note', meeting_id],
         queryFn: () => getNote(meeting_id),
+        refetchInterval: 15000,
         enabled: !!meeting_id,
         select: (data) => data.data,
     })

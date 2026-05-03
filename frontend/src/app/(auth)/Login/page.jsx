@@ -25,7 +25,7 @@ export default function LoginPage() {
             router.refresh();
         } catch (err) {
             setError(err.message || 'Login gagal');
-            toast.error(error);
+            toast.error(err.message || 'Login gagal'); 
         } finally {
             setLoading(false);
         }
@@ -38,16 +38,17 @@ export default function LoginPage() {
 
                 {/* Logo */}
                 <div className="flex items-center gap-2 mb-4">
-                    <Link href="/" className="flex items-center gap-2">
-                    <img
-                        src="/probesco.webp"
-                        alt="Probesco logo"
-                        className="rounded-md shadow-md w-10 h-10"
-                    />
-                    <span className="font-bold text-sm md:text-lg text-gray-900">
-                        Probesco - Meeting Management
-                    </span>
+                    <Link href="/dashboard" className="flex items-center gap-2">
+                        <img
+                            src="/probesco.webp"
+                            alt="Probesco logo"
+                            className="block rounded-md shadow-sm w-10 h-10 object-contain flex-shrink-0"
+                        />
+                        <span className="font-bold text-sm md:text-lg text-gray-900 leading-tight">
+                            Probesco - Meeting Management
+                        </span>
                     </Link>
+
                 </div>
 
                 {/* Heading */}
