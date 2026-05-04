@@ -54,7 +54,7 @@ export default function ParticipantsSection({ meetingId, participants = [], isHo
                     className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 transition group"
                     >
                     {/* Avatar */}
-                    <div className="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center flex-shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center shrink-0">
                         <span className="text-xs font-medium text-yellow-700">
                         {p.name?.charAt(0).toUpperCase()}
                         </span>

@@ -7,7 +7,8 @@ export const useActionItems = (meeting_id, status = null) => {
         queryKey: ['action-items', meeting_id, status],
         queryFn: () => getActionItems(meeting_id, status),
         enabled: !!meeting_id,
-        refetchInterval: 10000,
+        staleTime: 10000,
+        refetchInterval: 15000,
         select: (data) => data.data,
     })
 }
@@ -20,7 +21,8 @@ export const useActionItemsQueries = (meetingIds = [], status = null) => {
             queryKey: ['action-items', id, status],
             queryFn: () => getActionItems(id, status),
             enabled: !!id,
-            refetchInterval: 10000,
+            staleTime: 10000,
+            refetchInterval: 15000,
             select: (data) => data?.data ?? [],
         })),
     })

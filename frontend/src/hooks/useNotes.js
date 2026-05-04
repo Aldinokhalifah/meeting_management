@@ -6,9 +6,12 @@ export const useNote = (meeting_id) => {
     return useQuery({
         queryKey: ['note', meeting_id],
         queryFn: () => getNote(meeting_id),
-        refetchInterval: 15000,
         enabled: !!meeting_id,
+        refetchInterval: 20000,
+        refetchOnWindowFocus: true,
+        staleTime: 15000,         
         select: (data) => data.data,
+        retry: false,             // ← jangan retry kalau 404 (belum ada notulen)
     })
 }
 

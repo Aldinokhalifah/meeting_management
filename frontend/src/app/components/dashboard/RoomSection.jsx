@@ -1,18 +1,31 @@
 'use client'
 
 import { ROOMS } from '@/lib/room'
+import { useMemo } from 'react'
 
 export default function RoomSection({ meetings = [] }) {
-    const now = new Date()
 
-    const getRoomStatus = (roomName) => {
-        const activeMeeting = meetings.find(
-        (m) =>
-            m.location === roomName &&
-            m.status === 'ongoing'
-        )
-        return activeMeeting ?? null
-    }
+    const getRoomStatus = useMemo(() => {
+        return (roomName) => {
+            const now = new Date()
+
+            const activeMeeting = meetings.find((m) => {
+                if (m.location !== roomName) return false
+
+                if (m.status === 'ongoing') return true
+
+                if (m.status === 'scheduled' && m.end_time) {
+                    const start = new Date(m.scheduled_at)
+                    const end = new Date(m.end_time)
+                    return now >= start && now <= end
+                }
+
+                return false
+            })
+
+            return activeMeeting ?? null
+        }
+    }, [meetings])
 
     return (
         <div className="bg-white border border-gray-200 rounded-xl p-4">

@@ -6,6 +6,7 @@ export const useMeetings = () => {
     return useQuery({
         queryKey: ['meetings'],
         queryFn: getMeetings,
+        staleTime: 10000,
         refetchInterval: 30000,
         select: (data) => data.data,
     })
@@ -17,6 +18,7 @@ export const useMeeting = (id) => {
         queryFn: () => getMeetingById(id),
         enabled: !!id,
         refetchInterval: 15000,
+        staleTime: 10000,         
         select: (data) => data.data,
     })
 }

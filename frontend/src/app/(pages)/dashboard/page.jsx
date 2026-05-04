@@ -56,7 +56,7 @@ export default function Dashboard() {
                     {/* Kolom Kanan */}
                     <div className="space-y-4">
                     <RoomSection meetings={meetings} />
-                    <ActionItemsSection meetings={meetings} />
+                    <ActionItemsSection meetings={meetings} currentUserId={user?.id}/>
                     </div>
 
                 </div>
