@@ -43,7 +43,7 @@ const login = async ({ email, password }) => {
         { expiresIn: process.env.JWT_EXPIRES_IN }
     );
 
-    return { token, user: { id: user.id, name: user.name, email: user.email } };
+    return { token, user: { id: user.id, name: user.name, email: user.email, created_at: user.created_at } };
 }
 
 const getMe = async (userId) => {

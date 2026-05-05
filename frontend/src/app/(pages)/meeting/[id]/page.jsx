@@ -12,7 +12,7 @@ import MeetingFormModal from '@/app/components/meeting/modals/MeetingFormModal'
 import AddParticipantModal from '@/app/components/meeting/modals/AddParticipants'
 import AddActionItemModal from '@/app/components/meeting/modals/AddActionItemModal'
 import ContinueMeetingModal from '@/app/components/meeting/modals/ContinueMeetingModal'
-import Sidebar from "@/app/components/SideBar";
+import Sidebar from "@/app/components/ui/SideBar";
 
 export default function MeetingDetailPage() {
     const { id } = useParams()

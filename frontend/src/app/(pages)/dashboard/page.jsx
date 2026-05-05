@@ -9,7 +9,7 @@ import AllMeetings from '@/app/components/dashboard/AllMeetings'
 import RoomSection from '@/app/components/dashboard/RoomSection'
 import ActionItemsSection from '@/app/components/dashboard/ActionItemsSection'
 import MeetingFormModal from '@/app/components/meeting/modals/MeetingFormModal'
-import Sidebar from "@/app/components/SideBar";
+import Sidebar from "@/app/components/ui/SideBar";
 
 export default function Dashboard() {
     const { data: meetings = [], isLoading } = useMeetings()
