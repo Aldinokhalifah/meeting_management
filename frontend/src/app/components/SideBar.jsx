@@ -8,7 +8,7 @@ import { logout } from '@/services/auth'
 
 const navItems = [
     { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { label: 'Meeting', href: '/meeting', icon: CalendarDays },
+    { label: 'Meetings', href: '/meeting', icon: CalendarDays },
     { label: 'Profil', href: '/profile', icon: User },
 ]   
 

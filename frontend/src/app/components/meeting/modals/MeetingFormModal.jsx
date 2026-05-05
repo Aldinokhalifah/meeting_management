@@ -72,6 +72,7 @@ export default function MeetingFormModal({ isOpen, onClose, meeting = null }) {
             { id: meeting.id, body },
             {
             onSuccess: () => {
+                toast.success('Meeting Diperbarui')
                 onClose()
             },
             }

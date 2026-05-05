@@ -5,7 +5,6 @@ import Modal from '../../ui/Modal'
 import { useSearchUsers } from '@/hooks/useUsers'
 import { useAddParticipant } from '@/hooks/useMeetings'
 import { Search, UserPlus, Loader } from 'lucide-react'
-import toast from 'react-hot-toast'
 
 export default function AddParticipantModal({ isOpen, onClose, meetingId, existingParticipants = [] }) {
     const [keyword, setKeyword] = useState('')

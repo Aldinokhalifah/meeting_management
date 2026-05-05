@@ -23,7 +23,8 @@ const addParticipant = async ({ meeting_id, user_id, role = 'participant' }) => 
 const getMeetingByUser = async (user_id) => {
     const result = await db.query(
         `SELECT m.id, m.title, m.description, m.scheduled_at, m.end_time, m.location,
-                m.status, m.created_by, m.previous_meeting_id, m.created_at, mp.role as my_role
+                m.status, m.created_by, m.previous_meeting_id, m.created_at, mp.role as my_role,
+                (SELECT COUNT(*) FROM meeting_participants mp2 WHERE mp2.meeting_id = m.id) AS participant_count
         FROM meetings m
         JOIN meeting_participants mp ON m.id = mp.meeting_id
         WHERE mp.user_id = $1

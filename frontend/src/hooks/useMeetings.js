@@ -42,7 +42,6 @@ export const useUpdateMeeting = () => {
     return useMutation({
         mutationFn: ({ id, body }) => updateMeeting(id, body),
         onSuccess: (_, { id }) => {
-            toast.success(_.message);
             queryClient.invalidateQueries({ queryKey: ['meetings'] });
             queryClient.invalidateQueries({ queryKey: ['meeting', id] });
         },

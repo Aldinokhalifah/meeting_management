@@ -7,7 +7,7 @@ import { getGreeting } from '@/lib/getGreeting'
 
 export default function DashboardHeader({ user, onCreateMeeting }) {
     return (
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mt-12 lg:mt-0">
+        <div className="flex flex-col md:flex-row items-start lg:items-center justify-between mt-12 lg:mt-0">
             <div>
                 <h1 className="text-xl font-semibold text-gray-900">
                     {getGreeting()},{' '}
@@ -18,7 +18,7 @@ export default function DashboardHeader({ user, onCreateMeeting }) {
             <button
                 onClick={onCreateMeeting}
                 href="/meeting/new"
-                className="flex items-center mt-2 justify-center gap-2 px-4 w-full lg:w-fit py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium rounded-lg transition-colors"
+                className="flex items-center mt-2 justify-center gap-2 px-4 w-full md:w-fit py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium rounded-lg transition-colors"
             >
                 <Plus size={16} />
                 Buat Meeting

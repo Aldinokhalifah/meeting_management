@@ -26,7 +26,7 @@ export default function TodaySchedule({ meetings = [] }) {
                 Tidak ada meeting hari ini
                 </div>
             ) : (
-                <div className="space-y-1">
+                <div className="space-y-1 max-h-48 overflow-y-auto">
                 {todayMeetings.map((m) => {
                     const status = STATUS_STYLE[m.status] ?? STATUS_STYLE.scheduled
                     return (

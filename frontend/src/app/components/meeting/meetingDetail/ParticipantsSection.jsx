@@ -1,8 +1,7 @@
 'use client'
 
 import { useRemoveParticipant, useUpdateParticipantRole } from '@/hooks/useMeetings'
-import { UserPlus, Crown, X } from 'lucide-react'
-import toast from 'react-hot-toast'
+import { UserPlus, X } from 'lucide-react'
 import { ROLE_CONFIG } from '@/lib/role_config'
 
 export default function ParticipantsSection({ meetingId, participants = [], isHost, currentUserId, onAddParticipant }) {

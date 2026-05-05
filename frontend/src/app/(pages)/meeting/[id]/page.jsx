@@ -3,19 +3,18 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useMeeting, useDeleteMeeting } from '@/hooks/useMeetings'
-import MeetingHeader from '@/app/components/meeting/MeetingHeader'
-import NotesSection from '@/app/components/meeting/NoteSection'
-import ActionItemsSection from '@/app/components/meeting/ActionItemsSection'
-import ParticipantsSection from '@/app/components/meeting/ParticipantsSection'
-import PreviousMeetingSection from '@/app/components/meeting/PreviousMeetingSection'
+import MeetingHeader from '@/app/components/meeting/meetingDetail/MeetingHeader'
+import NotesSection from '@/app/components/meeting/meetingDetail/NoteSection'
+import ActionItemsSection from '@/app/components/meeting/meetingDetail/ActionItemsSection'
+import ParticipantsSection from '@/app/components/meeting/meetingDetail/ParticipantsSection'
+import PreviousMeetingSection from '@/app/components/meeting/meetingDetail/PreviousMeetingSection'
 import MeetingFormModal from '@/app/components/meeting/modals/MeetingFormModal'
 import AddParticipantModal from '@/app/components/meeting/modals/AddParticipants'
 import AddActionItemModal from '@/app/components/meeting/modals/AddActionItemModal'
 import ContinueMeetingModal from '@/app/components/meeting/modals/ContinueMeetingModal'
-import toast from 'react-hot-toast'
 import Sidebar from "@/app/components/SideBar";
 
-export default function MeetingPage() {
+export default function MeetingDetailPage() {
     const { id } = useParams()
     const router = useRouter()
     const { data: meeting, isLoading } = useMeeting(id)
