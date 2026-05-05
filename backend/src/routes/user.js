@@ -6,5 +6,7 @@ const authMiddleware = require('../middleware/auth');
 router.use(authMiddleware);
 
 router.get('/search', userController.searchUsers);
+router.patch('/profile', userController.updateProfile);
+router.patch('/password', userController.updatePassword);
 
 module.exports = router;
