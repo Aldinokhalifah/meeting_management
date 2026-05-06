@@ -36,7 +36,7 @@ const getMeetingByUser = async (user_id) => {
 
 const getMeetingById = async (meeting_id) => {
     const result = await db.query(
-        `SELECT id, title, description, scheduled_at, end_time, location, status, created_by, previous_meeting_id, created_at 
+        `SELECT id, title, description, scheduled_at, end_time, location, status, ai_summary, created_by, previous_meeting_id, created_at 
         FROM meetings WHERE id = $1`, 
         [meeting_id]
     );

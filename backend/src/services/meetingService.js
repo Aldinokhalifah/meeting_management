@@ -1,5 +1,6 @@
 const meetingRepo = require('../repositories/meetingRepository');
 const authRepo = require('../repositories/authRepository');
+const aiService = require('./aiService');
 
 const createMeeting = async ({ title, description, scheduled_at, end_time, location, participant_ids = [], previous_meeting_id = null }, created_by) => {
     if (!title || !scheduled_at) throw new Error('TITLE_AND_SCHEDULE_REQUIRED');
@@ -68,7 +69,17 @@ const updateMeeting = async (meeting_id, user_id, body) => {
         throw new Error('END_TIME_BEFORE_START_TIME');
     }
 
-    return await meetingRepo.updateMeeting(meeting_id, body);
+    const updated =  await meetingRepo.updateMeeting(meeting_id, body);
+
+     // Auto-generate AI summary saat meeting diakhiri
+    if (body.status === 'done') {
+        aiService.generateMeetingSummary(meeting_id, user_id).catch((err) => {
+            console.error(`[AI Summary Error] meeting ${meeting_id}:`, err.message)
+            console.error(err.stack) // ← tambah ini untuk lihat detail error
+        })
+    }
+
+    return updated;
 };
 
 const deleteMeeting = async (meeting_id, user_id) => {

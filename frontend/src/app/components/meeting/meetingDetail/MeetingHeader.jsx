@@ -5,6 +5,7 @@ import { ArrowLeft, Calendar, Clock, MapPin, Link2 } from 'lucide-react'
 import { formatTime } from '@/lib/formatTime'
 import { STATUS_CONFIG } from '@/lib/status_config'
 import { useUpdateMeeting } from '@/hooks/useMeetings'
+import toast from 'react-hot-toast'
 
 const formatDate = (date) =>
     new Date(date).toLocaleDateString('id-ID', {

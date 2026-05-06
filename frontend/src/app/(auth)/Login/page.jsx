@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { login } from '@/services/auth'
 import toast from 'react-hot-toast'
+import Image from 'next/image'
 
 export default function LoginPage() {
     const router = useRouter();
@@ -39,10 +40,12 @@ export default function LoginPage() {
                 {/* Logo */}
                 <div className="flex items-center gap-2 mb-4">
                     <Link href="/dashboard" className="flex items-center gap-2">
-                        <img
-                            src="/probesco.webp"
-                            alt="Probesco logo"
-                            className="block rounded-md shadow-sm w-10 h-10 object-contain flex-shrink-0"
+                        <Image 
+                            src={'/probesco.webp'}
+                            alt='Probesco'
+                            height={40}
+                            width={40}
+                            className='rounded-md shadow-sm'
                         />
                         <span className="font-bold text-sm md:text-lg text-gray-900 leading-tight">
                             Probesco - Meeting Management

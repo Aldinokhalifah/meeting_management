@@ -24,6 +24,7 @@ CREATE TABLE meetings (
     previous_meeting_id UUID REFERENCES meetings(id) ON DELETE SET NULL,
     created_at TIMESTAMP DEFAULT NOW()
 );
+ALTER TABLE meetings ADD COLUMN ai_summary TEXT;
 
 -- 2. Indexing untuk Tabel Meetings
 -- Mempercepat pencarian meeting berdasarkan pembuat atau status (misal: cari meeting 'ongoing').

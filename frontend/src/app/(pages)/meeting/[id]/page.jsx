@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { useMeeting, useDeleteMeeting } from '@/hooks/useMeetings'
 import MeetingHeader from '@/app/components/meeting/meetingDetail/MeetingHeader'
 import NotesSection from '@/app/components/meeting/meetingDetail/NoteSection'
+import AiSummarySection from '@/app/components/meeting/meetingDetail/AiSummarySection'
 import ActionItemsSection from '@/app/components/meeting/meetingDetail/ActionItemsSection'
 import ParticipantsSection from '@/app/components/meeting/meetingDetail/ParticipantsSection'
 import PreviousMeetingSection from '@/app/components/meeting/meetingDetail/PreviousMeetingSection'
@@ -62,7 +63,7 @@ export default function MeetingDetailPage() {
     return(
         <div className="flex flex-col md:flex-row w-full bg-white">
             <Sidebar />
-            <div className="p-4 md:p-6 space-y-4 max-w-7xl mx-auto">
+            <div className="p-4 md:p-6 space-y-4 max-w-4xl mx-auto">
                 {/* Header */}
                 <MeetingHeader
                     meeting={meeting}
@@ -101,6 +102,9 @@ export default function MeetingDetailPage() {
 
                 {/* Notes Section - Full Width Below */}
                 <NotesSection meetingId={id} canEdit={canEdit} />
+
+                {/* AI Summary Section */}
+                <AiSummarySection meeting={meeting} />
 
                 {/* Modals */}
                 {showEditModal && (
