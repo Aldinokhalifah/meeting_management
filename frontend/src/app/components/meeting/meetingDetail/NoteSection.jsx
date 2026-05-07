@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import { useNote, useCreateNote, useUpdateNote } from '@/hooks/useNotes'
@@ -17,14 +17,17 @@ const ToolbarBtn = ({ onClick, active, children, title }) => (
     >
         {children}
     </button>
-    )
+)
 
 export default function NotesSection({ meetingId, canEdit }) {
     const { data: note, isLoading, isFetching } = useNote(meetingId)
     const { mutate: createNote, isPending: creating } = useCreateNote()
     const { mutate: updateNote, isPending: updating } = useUpdateNote()
     const [isDirty, setIsDirty] = useState(false)
-    const [hasLoadedNote, setHasLoadedNote] = useState(false)
+    const [hasLoaded, setHasLoaded] = useState(false)
+
+    // Simpan konten terakhir yang di-load — pakai ref agar tidak trigger re-render
+    const lastLoadedContent = useRef(null)
 
     const editor = useEditor({
         extensions: [StarterKit],
@@ -39,41 +42,60 @@ export default function NotesSection({ meetingId, canEdit }) {
     })
 
     useEffect(() => {
-        if (!editor || !note || isDirty) return
+        if (!editor || !note) return
 
-        const content = note.content || ''
-        editor.commands.setContent(content)
+        // Stringify untuk compare — kalau sama persis skip
+        const incoming = JSON.stringify(note.content)
+        const current = lastLoadedContent.current
+
+        // Jangan load ulang kalau:
+        // 1. Konten sama persis dengan yang sudah di-load
+        // 2. User sedang mengedit (isDirty)
+        if (incoming === current || isDirty) return
+
+        editor.commands.setContent(note.content || '')
+        lastLoadedContent.current = incoming
+        setHasLoaded(true)
         setIsDirty(false)
-        setHasLoadedNote(true)
-    }, [editor, note?.content, isDirty])
+    }, [editor, note, isDirty])
 
     const handleSave = () => {
         if (!editor) return
         const content = editor.getJSON()
+
         if (note) {
         updateNote(
             { meeting_id: meetingId, content },
-            { onSuccess: () => { setIsDirty(false) } }
+            {
+            onSuccess: () => {
+                // Update lastLoadedContent agar refetch berikutnya tidak override
+                lastLoadedContent.current = JSON.stringify(content)
+                setIsDirty(false)
+            },
+            }
         )
         } else {
         createNote(
             { meeting_id: meetingId, content },
-            { onSuccess: () => { setIsDirty(false) } }
+            {
+            onSuccess: () => {
+                lastLoadedContent.current = JSON.stringify(content)
+                setIsDirty(false)
+            },
+            }
         )
         }
     }
 
-    // ← Hanya show skeleton saat pertama kali load (bukan saat refetch)
-    if (isLoading && !hasLoadedNote) return (
+    if (isLoading && !hasLoaded) return (
         <div className="bg-white border border-gray-200 rounded-xl p-4 animate-pulse h-48" />
     )
 
     return (
-        <div className="bg-white border border-gray-200 rounded-xl p-4 ">
+        <div className="bg-white border border-gray-200 rounded-xl p-4">
             <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                 <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Notulen</p>
-                {/* Indikator refetch yang tidak ganggu editor */}
                 {isFetching && !isDirty && (
                     <span className="text-xs text-gray-300">menyinkronkan...</span>
                 )}
