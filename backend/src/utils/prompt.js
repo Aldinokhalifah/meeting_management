@@ -36,7 +36,7 @@ const Prompt = (title, scheduled_at, location, description, noteText, participan
         Fokus pada poin krusial, kendala, atau risiko. Jika data minim, rangkum bagian ini menjadi 1-2 poin inti saja atau gabungkan dengan Ringkasan Umum untuk efisiensi.
 
         ---
-        *Catatan: Ringkasan ini dibuat secara otomatis oleh AI sebagai referensi. Harap tinjau kembali sebelum digunakan sebagai dasar keputusan final.*
+        *Catatan: Berikan catatan singkat di akhir ringkasan karna ini dibuat secara otomatis oleh AI sebagai referensi. Harap tinjau kembali sebelum digunakan sebagai dasar keputusan final.*
         `.trim();
 };
 
