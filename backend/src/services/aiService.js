@@ -25,14 +25,23 @@ const generateMeetingSummary = async (meeting_id, user_id) => {
     if (!noteText) throw new Error('NOTE_EMPTY')
 
     // Ambil Action Item
-    const actionItem = await actionItemRepo.getActionItemsByMeetingId(meeting_id)
-
+    const actionItems = await actionItemRepo.getActionItemsByMeetingId(meeting_id)
+    
+    // Format action items menjadi string readable
+    const actionItemText = actionItems && actionItems.length > 0
+    ? actionItems
+        .filter(item => item.status !== 'done')
+        .map((item, index) =>
+            `${index + 1}. ${item.description} (Ditugaskan ke: ${item.assigned_to_name || 'Belum ditugaskan'}, Deadline: ${item.due_date || 'Tidak ada deadline'})`
+        )
+        .join('\n')
+    : 'Tidak ada action items';
     // Ambil peserta
     const participants = await meetingRepo.getParticipantsByMeetingId(meeting_id)
     const participantNames = participants.map((p) => `${p.name} (${p.role})`).join(', ')
 
     // Buat prompt
-    const promptText = Prompt(meeting.title, meeting.scheduled_at, meeting.location, meeting.description, noteText, participantNames, actionItem || null);
+    const promptText = Prompt(meeting.title, meeting.scheduled_at, meeting.location, meeting.description, noteText, participantNames, actionItemText);
 
     // Kirim ke OpenRouter
     const response = await openrouter.chat.completions.create({

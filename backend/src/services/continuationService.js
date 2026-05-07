@@ -1,6 +1,8 @@
 const meetingRepo = require('../repositories/meetingRepository');
 const actionItemsRepo = require('../repositories/actionItemRepository');
 const continuationRepo = require('../repositories/continuationRepository');
+const emailService = require('./emailService');
+const authRepo = require('../repositories/authRepository');
 
 const createContinuation = async ({
     source_meeting_id,
@@ -70,6 +72,21 @@ const createContinuation = async ({
         user_id: p.user_id,
         access_level: wasParticipant ? 'full' : (p.access_level || 'none'),
         });
+
+        // Kirim email undangan untuk peserta baru
+        const targetUser = await authRepo.findUserById(p.user_id)
+        const host = await authRepo.findUserById(user_id)
+
+        if (targetUser) {
+            emailService.sendInvitationEmail({
+            recipientEmail: targetUser.email,
+            recipientName: targetUser.name,
+            meeting: newMeeting,
+            hostName: host.name,
+            }).catch((err) => {
+                console.error(`[Email Error] Invitation to ${targetUser.email}:`, err.message)
+            })
+        }
     }
 
     const openItems = await actionItemsRepo.getOpenActionItemsByMeetingId(source_meeting_id);

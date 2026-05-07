@@ -1,12 +1,19 @@
 const meetingRepo = require('../repositories/meetingRepository');
 const authRepo = require('../repositories/authRepository');
 const aiService = require('./aiService');
+const emailService = require('./emailService')
 
 const createMeeting = async ({ title, description, scheduled_at, end_time, location, participant_ids = [], previous_meeting_id = null }, created_by) => {
     if (!title || !scheduled_at) throw new Error('TITLE_AND_SCHEDULE_REQUIRED');
 
     // Validasi end_time harus lebih besar dari scheduled_at
-    if (new Date(end_time) <= new Date(scheduled_at)) throw new Error('END_TIME_BEFORE_START_TIME');
+    const final_scheduled_at = scheduled_at;
+    const final_end_time = end_time;
+
+    // Validasi end_time harus lebih besar dari scheduled_at
+    if (final_end_time && new Date(final_end_time) <= new Date(final_scheduled_at)) {
+        throw new Error('END_TIME_BEFORE_START_TIME');
+    }
 
     // Validasi scheduled_at tidak di masa lalu
     if (new Date(scheduled_at) < new Date()) throw new Error('SCHEDULE_IN_THE_PAST');
@@ -73,9 +80,19 @@ const updateMeeting = async (meeting_id, user_id, body) => {
 
      // Auto-generate AI summary saat meeting diakhiri
     if (body.status === 'done') {
-        aiService.generateMeetingSummary(meeting_id, user_id).catch((err) => {
-            console.error(`[AI Summary Error] meeting ${meeting_id}:`, err.message)
-            console.error(err.stack) // ← tambah ini untuk lihat detail error
+        // Generate AI summary di background
+        aiService.generateMeetingSummary(meeting_id, user_id)
+        .then(async () => {
+            // Kirim email setelah AI summary selesai
+            await emailService.sendMeetingSummaryEmails(meeting_id)
+        })
+        .catch((err) => {
+            console.error(`[AI/Email Error] meeting ${meeting_id}:`, err.message)
+
+            // Kalau AI gagal, tetap kirim email tanpa summary
+            emailService.sendMeetingSummaryEmails(meeting_id).catch((emailErr) => {
+            console.error(`[Email Error] meeting ${meeting_id}:`, emailErr.message)
+            })
         })
     }
 
@@ -112,7 +129,22 @@ const addParticipant = async (meeting_id, user_id, target_user_id) => {
         if (conflictUserIds.length > 0) throw new Error(`SCHEDULE_CONFLICT_USERS_${conflictUserIds.join(',')}`);
     }
 
-    return await meetingRepo.addParticipant({ meeting_id, user_id: target_user_id, role: 'participant' });
+    const participant = await meetingRepo.addParticipant({ meeting_id, user_id: target_user_id, role: 'participant' })
+
+    // Ambil data host untuk email
+    const host = await authRepo.findUserById(user_id)
+
+    // Kirim email undangan di background
+    emailService.sendInvitationEmail({
+        recipientEmail: targetUser.email,
+        recipientName: targetUser.name,
+        meeting,
+        hostName: host.name,
+    }).catch((err) => {
+        console.error(`[Email Error] Invitation to ${targetUser.email}:`, err.message)
+    })
+
+    return participant
 }
 
 const removeParticipant = async (meeting_id, user_id, target_user_id) => {

@@ -38,21 +38,14 @@ export default function LoginPage() {
                 <div className="bg-white rounded-2xl shadow-lg p-8">
 
                 {/* Logo */}
-                <div className="flex items-center gap-2 mb-4">
+                {/* <div className="flex items-center gap-2 mb-4">
                     <Link href="/dashboard" className="flex items-center gap-2">
-                        <Image 
-                            src={'/probesco.webp'}
-                            alt='Probesco'
-                            height={40}
-                            width={40}
-                            className='rounded-md shadow-sm'
-                        />
                         <span className="font-bold text-sm md:text-lg text-gray-900 leading-tight">
-                            Probesco - Meeting Management
+                            Login
                         </span>
                     </Link>
 
-                </div>
+                </div> */}
 
                 {/* Heading */}
                 <div className="mb-6">
