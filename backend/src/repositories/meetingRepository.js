@@ -116,6 +116,17 @@ const checkScheduleConflict = async (user_id, scheduled_at, end_time) => {
     return result.rows.map(row => row.name);
 }
 
+const checkRoomAvailable = async (location, scheduled_at, end_time) => {
+    const result = await db.query(
+        `SELECT id, title FROM meetings 
+        WHERE location = $1 
+        AND status NOT IN ('done', 'cancelled') 
+        AND (scheduled_at < $3 AND end_time > $2)`,
+        [location, scheduled_at, end_time]
+    );
+    return result.rows.length > 0; // Return boolean: true if conflict exists
+}
+
 const updateParticipantRole = async (meeting_id, user_id, role) => {
     const result = await db.query(
         `UPDATE meeting_participants
@@ -131,5 +142,5 @@ module.exports = {
     createMeeting, addParticipant, getMeetingByUser, getMeetingById, 
     getParticipantsByMeetingId, isParticipant, getUserRole, 
     updateMeeting, deleteMeeting, removeParticipant,
-    checkScheduleConflict, updateParticipantRole
+    checkScheduleConflict, updateParticipantRole, checkRoomAvailable
 };

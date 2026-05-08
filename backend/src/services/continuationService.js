@@ -29,6 +29,11 @@ const createContinuation = async ({
         }
     }
 
+    const checkRoomAvailable = await meetingRepo.checkRoomAvailable(location, scheduled_at, end_time);
+    if(checkRoomAvailable) {
+        throw new Error('SCHEDULE_CONFLICT_ROOM');
+    }
+
     // Cek bentrok jadwal jika end_time diisi
     if (end_time) {
         const allConflictIds = [];

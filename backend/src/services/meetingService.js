@@ -18,6 +18,11 @@ const createMeeting = async ({ title, description, scheduled_at, end_time, locat
     // Validasi scheduled_at tidak di masa lalu
     if (new Date(scheduled_at) < new Date()) throw new Error('SCHEDULE_IN_THE_PAST');
 
+    const checkRoomAvailable = await meetingRepo.checkRoomAvailable(location, scheduled_at, end_time);
+    if(checkRoomAvailable) {
+        throw new Error('SCHEDULE_CONFLICT_ROOM');
+    }
+
 
 
     // Cek bentrok jadwal jika end_time diisi
@@ -75,6 +80,12 @@ const updateMeeting = async (meeting_id, user_id, body) => {
     if (final_end_time && new Date(final_end_time) <= new Date(final_scheduled_at)) {
         throw new Error('END_TIME_BEFORE_START_TIME');
     }
+
+    const checkRoomAvailable = await meetingRepo.checkRoomAvailable(body.location, body.scheduled_at, body.end_time);
+    if(checkRoomAvailable) {
+        throw new Error('SCHEDULE_CONFLICT_ROOM');
+    }
+
 
     const updated =  await meetingRepo.updateMeeting(meeting_id, body);
 
