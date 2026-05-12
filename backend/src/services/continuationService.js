@@ -79,19 +79,19 @@ const createContinuation = async ({
         });
 
         // Kirim email undangan untuk peserta baru
-        const targetUser = await authRepo.findUserById(p.user_id)
-        const host = await authRepo.findUserById(user_id)
+        // const targetUser = await authRepo.findUserById(p.user_id)
+        // const host = await authRepo.findUserById(user_id)
 
-        if (targetUser) {
-            emailService.sendInvitationEmail({
-            recipientEmail: targetUser.email,
-            recipientName: targetUser.name,
-            meeting: newMeeting,
-            hostName: host.name,
-            }).catch((err) => {
-                console.error(`[Email Error] Invitation to ${targetUser.email}:`, err.message)
-            })
-        }
+        // if (targetUser) {
+        //     emailService.sendInvitationEmail({
+        //     recipientEmail: targetUser.email,
+        //     recipientName: targetUser.name,
+        //     meeting: newMeeting,
+        //     hostName: host.name,
+        //     }).catch((err) => {
+        //         console.error(`[Email Error] Invitation to ${targetUser.email}:`, err.message)
+        //     })
+        // }
     }
 
     const openItems = await actionItemsRepo.getOpenActionItemsByMeetingId(source_meeting_id);

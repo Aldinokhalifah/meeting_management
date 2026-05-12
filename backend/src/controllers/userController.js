@@ -14,10 +14,15 @@ const searchUsers = async (req, res, next) => {
 
 const updateProfile = async (req, res, next) => {
     try {
-        const { name, email, avatar_url } = req.body
+        const { name, email, avatar_url, whatsapp_phone } = req.body
         if (!name) return res.status(400).json({ message: 'Nama wajib diisi' })
 
-        const updated = await userService.updateProfile(req.user.id, { name, email, avatar_url })
+        const updated = await userService.updateProfile(req.user.id, {
+            name,
+            email,
+            avatar_url,
+            whatsapp_phone,
+        })
         res.status(200).json({ message: 'Profil berhasil diupdate', data: updated })
     } catch (err) {
         next(err)

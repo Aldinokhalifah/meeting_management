@@ -2,6 +2,7 @@ const meetingRepo = require('../repositories/meetingRepository');
 const authRepo = require('../repositories/authRepository');
 const aiService = require('./aiService');
 const emailService = require('./emailService')
+const waService = require('./waService')
 
 const createMeeting = async ({ title, description, scheduled_at, end_time, location, participant_ids = [], previous_meeting_id = null }, created_by) => {
     if (!title || !scheduled_at) throw new Error('TITLE_AND_SCHEDULE_REQUIRED');
@@ -93,18 +94,22 @@ const updateMeeting = async (meeting_id, user_id, body) => {
     if (body.status === 'done') {
         // Generate AI summary di background
         aiService.generateMeetingSummary(meeting_id, user_id)
-        .then(async () => {
-            // Kirim email setelah AI summary selesai
-            await emailService.sendMeetingSummaryEmails(meeting_id)
-        })
-        .catch((err) => {
-            console.error(`[AI/Email Error] meeting ${meeting_id}:`, err.message)
+        // .then(async () => {
+        //     // Kirim email setelah AI summary selesai
+        //     await emailService.sendMeetingSummaryEmails(meeting_id)
+        //     await waService.sendMeetingSummaryWhatsApps(meeting_id)
+        // })
+        // .catch((err) => {
+        //     // console.error(`[AI/Email Error] meeting ${meeting_id}:`, err.message)
 
-            // Kalau AI gagal, tetap kirim email tanpa summary
-            emailService.sendMeetingSummaryEmails(meeting_id).catch((emailErr) => {
-            console.error(`[Email Error] meeting ${meeting_id}:`, emailErr.message)
-            })
-        })
+        //     // Kalau AI gagal, tetap kirim email tanpa summary
+        //     emailService.sendMeetingSummaryEmails(meeting_id).catch((emailErr) => {
+        //     console.error(`[Email Error] meeting ${meeting_id}:`, emailErr.message)
+        //     })
+        //     waService.sendMeetingSummaryWhatsApps(meeting_id).catch((waErr) => {
+        //         console.error(`[WA Error] meeting ${meeting_id}:`, waErr.message)
+        //     })
+        // })
     }
 
     return updated;
@@ -146,14 +151,27 @@ const addParticipant = async (meeting_id, user_id, target_user_id) => {
     const host = await authRepo.findUserById(user_id)
 
     // Kirim email undangan di background
-    emailService.sendInvitationEmail({
-        recipientEmail: targetUser.email,
-        recipientName: targetUser.name,
-        meeting,
-        hostName: host.name,
-    }).catch((err) => {
-        console.error(`[Email Error] Invitation to ${targetUser.email}:`, err.message)
-    })
+    // emailService.sendInvitationEmail({
+    //     recipientEmail: targetUser.email,
+    //     recipientName: targetUser.name,
+    //     meeting,
+    //     hostName: host.name,
+    // }).catch((err) => {
+    //     console.error(`[Email Error] Invitation to ${targetUser.email}:`, err.message)
+    // })
+
+    // if (targetUser.whatsapp_phone) {
+    //     waService
+    //         .sendInvitationWhatsApp({
+    //             recipientPhone: targetUser.whatsapp_phone,
+    //             recipientName: targetUser.name,
+    //             meeting,
+    //             hostName: host.name,
+    //         })
+    //         .catch((err) => {
+    //             console.error(`[WA Error] Invitation to ${targetUser.whatsapp_phone}:`, err.message)
+    //         })
+    // }
 
     return participant
 }

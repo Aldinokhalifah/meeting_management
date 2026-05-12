@@ -1,13 +1,14 @@
 const userRepo = require('../repositories/userRepository');
 const authRepo = require('../repositories/authRepository');
 const bcrypt = require('bcryptjs');
+const { normalizeIndonesiaWhatsapp } = require('../utils/normalizePhone');
 
 const searchUsers = async (keyword) => {
     if (!keyword || keyword.trim().length < 2) throw new Error('KEYWORD_TOO_SHORT');
     return await userRepo.searchUsers(keyword.trim());
 }
 
-const updateProfile = async (id, { name, email, avatar_url }) => {
+const updateProfile = async (id, { name, email, avatar_url, whatsapp_phone }) => {
     if (!name || !name.trim()) throw new Error('INVALID_NAME')
 
     // Kalau email diubah, cek apakah sudah dipakai user lain
@@ -19,7 +20,25 @@ const updateProfile = async (id, { name, email, avatar_url }) => {
         if (existing && existing.id !== id) throw new Error('EMAIL_ALREADY_EXISTS')
     }
 
-    const updated = await userRepo.updateUser(id, { name: name.trim(), email, avatar_url })
+    const patch = { name: name.trim() }
+    if (email !== undefined) patch.email = email
+    if (avatar_url !== undefined) patch.avatar_url = avatar_url
+
+    if (whatsapp_phone !== undefined) {
+        if (whatsapp_phone === null || String(whatsapp_phone).trim() === '') {
+            patch.whatsapp_phone = null
+        } else {
+            const normalizedWa = normalizeIndonesiaWhatsapp(whatsapp_phone)
+            if (!normalizedWa) {
+                const e = new Error('Nomor WhatsApp tidak valid')
+                e.status = 400
+                throw e
+            }
+            patch.whatsapp_phone = normalizedWa
+        }
+    }
+
+    const updated = await userRepo.updateUser(id, patch)
     if (!updated) throw new Error('USER_NOT_FOUND')
     return updated
 }

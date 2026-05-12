@@ -7,6 +7,7 @@ const findUserByEmail = async (email) => {
 
 const findUserById = async (id) => {
     const result = await db.query(
+        // 'SELECT id, name, email, avatar_url, whatsapp_phone, created_at FROM users WHERE id = $1',
         'SELECT id, name, email, avatar_url, created_at FROM users WHERE id = $1',
         [id]
     )
