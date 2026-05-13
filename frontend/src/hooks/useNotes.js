@@ -7,38 +7,45 @@ export const useNote = (meeting_id) => {
         queryKey: ['note', meeting_id],
         queryFn: () => getNote(meeting_id),
         enabled: !!meeting_id,
-        refetchInterval: 20000,
-        refetchOnWindowFocus: true,
-        staleTime: 15000,         
+        refetchInterval: (query) => {
+            // Hanya refetch kalau note sudah ada (tidak error 404)
+            if (query.state.error) return false
+            return 20000
+        },
+        refetchOnWindowFocus: false, // ← matikan, sering jadi penyebab flicker
+        staleTime: 15000,
         select: (data) => data.data,
-        retry: false,             // ← jangan retry kalau 404 (belum ada notulen)
+        retry: false,
     })
 }
 
 export const useCreateNote = () => {
-    const queryClient = useQueryClient();
+    const queryClient = useQueryClient()
     return useMutation({
         mutationFn: ({ meeting_id, content }) => createNote(meeting_id, content),
-        onSuccess: (_, { meeting_id }) => {
-            toast.success(_.message);
-            queryClient.invalidateQueries({ queryKey: ['note', meeting_id] });
+        onSuccess: (data, { meeting_id }) => {
+            toast.success(data.message)
+            // Pakai setQueryData instead of invalidateQueries
+            // agar tidak trigger refetch yang bisa bikin flicker
+            queryClient.setQueryData(['note', meeting_id], data)
         },
         onError: (err) => {
-            toast.error(err.message || "Gagal membuat catatan");
-        }
+            toast.error(err.message || 'Gagal membuat catatan')
+        },
     })
 }
 
 export const useUpdateNote = () => {
-    const queryClient = useQueryClient();
+    const queryClient = useQueryClient()
     return useMutation({
         mutationFn: ({ meeting_id, content }) => updateNote(meeting_id, content),
-        onSuccess: (_, { meeting_id }) => {
-            toast.success(_.message);
-            queryClient.invalidateQueries({ queryKey: ['note', meeting_id] });
+        onSuccess: (data, { meeting_id }) => {
+            toast.success(data.message)
+            // Sama — pakai setQueryData bukan invalidateQueries
+            queryClient.setQueryData(['note', meeting_id], data)
         },
         onError: (err) => {
-            toast.error(err.message || "Gagal memperbarui catatan");
-        }
+            toast.error(err.message || 'Gagal memperbarui catatan')
+        },
     })
 }

@@ -36,7 +36,7 @@ export const useAgent = () => {
             .slice(1)
             .map((m) => ({ role: m.role, content: m.content }))
 
-        console.log('[useAgent] Sending history:', history.length, 'messages')
+        // console.log('[useAgent] Sending history:', history.length, 'messages')
 
         const result = await sendChatMessage({
             message,
@@ -51,10 +51,10 @@ export const useAgent = () => {
         setMessages((prev) => [...prev, assistantMessage])
 
         } catch (err) {
-        toast.error('AI Agent tidak tersedia, coba lagi nanti')
-        setMessages((prev) => prev.slice(0, -1))
+            toast.error('AI Agent tidak tersedia, coba lagi nanti')
+            setMessages((prev) => prev.slice(0, -1))
         } finally {
-        setIsLoading(false)
+            setIsLoading(false)
         }
     }, [isLoading])
 

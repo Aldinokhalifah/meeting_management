@@ -42,22 +42,23 @@ export default function NotesSection({ meetingId, canEdit }) {
     })
 
     useEffect(() => {
-        if (!editor || !note) return
+        if (!editor) return
 
-        // Stringify untuk compare — kalau sama persis skip
+        // Kalau note null/undefined, skip — jangan trigger apapun
+        if (!note?.content) return
+
         const incoming = JSON.stringify(note.content)
         const current = lastLoadedContent.current
 
-        // Jangan load ulang kalau:
-        // 1. Konten sama persis dengan yang sudah di-load
-        // 2. User sedang mengedit (isDirty)
         if (incoming === current || isDirty) return
 
-        editor.commands.setContent(note.content || '')
+        editor.commands.setContent(note.content)
         lastLoadedContent.current = incoming
         setHasLoaded(true)
         setIsDirty(false)
-    }, [editor, note, isDirty])
+
+    // ← pakai note?.id bukan note — object note tidak berubah kalau id sama
+    }, [editor, note?.id, note?.content, isDirty])
 
     const handleSave = () => {
         if (!editor) return
