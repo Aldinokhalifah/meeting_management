@@ -2,6 +2,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import Provider from "./providers/ReactQueryProvider";
+import FloatingChat from "./components/agent/FloatingChat";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,6 +34,7 @@ export default function RootLayout({ children }) {
         <Provider >
           {children}
         </Provider>
+        <FloatingChat />
         </body>
     </html>
   );

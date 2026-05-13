@@ -719,7 +719,124 @@ Ambil detail meeting sebelumnya. Response berbeda tergantung `access_level` user
 
 ---
 
-## 8. Error Umum
+## 8. AI Summary (Meeting)
+
+Ringkasan meeting dihasilkan dari notulen (Tiptap → teks), daftar action item yang belum `done`, metadata meeting, dan peserta, lalu dikirim ke **OpenRouter** (model dari env `OPENROUTER_MODEL`, default `openai/gpt-oss-20b:free`). Hasil disimpan di kolom `ai_summary` pada meeting.
+
+**Base path:** `/api/meetings/:id/ai`  
+Semua route di bawah ini membutuhkan **Bearer token** dan user harus **peserta meeting** `:id`.
+
+---
+
+### POST `/meetings/:id/ai/summary`
+Generate ringkasan AI untuk meeting (simpan ke database).
+
+**Path params:**
+| Param | Keterangan |
+|-------|------------|
+| id | UUID meeting |
+
+**Body:** tidak ada (gunakan `Content-Type: application/json` dengan body `{}` atau tanpa body sesuai klien).
+
+**Response `201`:**
+```json
+{
+  "message": "AI summary berhasil dibuat",
+  "data": {
+    "summary": "Teks ringkasan dari model..."
+  }
+}
+```
+
+**Errors:**  
+Middleware error global mengembalikan `status` dari `err.status` jika ada, selain itu **500** dengan body `{ "message": "<teks Error.message>" }`.  
+Dari `aiService`, `message` umumnya berupa salah satu kode berikut:
+
+| Kode `message` | Arti (kondisi bisnis) |
+|----------------|------------------------|
+| `MEETING_NOT_FOUND` | Meeting tidak ada |
+| `ACCESS_FORBIDDEN` | User bukan peserta meeting |
+| `MEETING_NOT_DONE` | Status meeting bukan `done` |
+| `NOTE_EMPTY` | Tidak ada notulen / teks notulen kosong |
+| `AI_RESPONSE_EMPTY` | Model tidak mengembalikan konten ringkasan |
+| *(lain)* | Kegagalan jaringan/SDK OpenRouter, dll. |
+
+> Pastikan variabel lingkungan untuk OpenRouter (mis. kunci API di konfigurasi `openrouter`) sudah benar agar pemanggilan model berhasil.
+
+---
+
+### GET `/meetings/:id/ai/summary`
+Ambil ringkasan AI yang sudah pernah disimpan untuk meeting ini.
+
+**Path params:** sama seperti POST.
+
+**Response `200`:**
+```json
+{
+  "message": "Berhasil mengambil AI summary",
+  "data": {
+    "summary": "Teks ringkasan yang tersimpan..."
+  }
+}
+```
+**Errors:**  
+Sama seperti POST: umumnya **500** dengan `message` berupa kode, misalnya:
+
+| Kode `message` | Arti |
+|----------------|------|
+| `MEETING_NOT_FOUND` | Meeting tidak ada |
+| `ACCESS_FORBIDDEN` | Bukan peserta |
+| `AI_SUMMARY_NOT_FOUND` | Belum pernah generate ringkasan / kolom kosong |
+
+---
+
+## 9. Agent (Chat)
+
+Meneruskan percakapan ke **layanan agent eksternal** (URL dasar dari env `AGENT_URL`, endpoint `POST {AGENT_URL}/chat`). Backend Node hanya memvalidasi input, menambahkan `user_id` dari JWT, dan mengembalikan JSON dari agent ke klien.
+
+**Base path:** `/api/agent`  
+Semua route membutuhkan **Bearer token**.
+
+---
+
+### POST `/agent/chat`
+Kirim pesan ke agent.
+
+**Body:**
+```json
+{
+  "message": "Apa saja action item terbuka untuk meeting saya?",
+  "conversation_history": []
+}
+```
+
+| Field | Required | Keterangan |
+|-------|----------|------------|
+| message | ✅ | Teks pertanyaan / perintah (tidak boleh kosong atau hanya spasi) |
+| conversation_history | ❌ | Array riwayat percakapan; dikirim ke agent sebagai `conversation_history` (format mengikuti kontrak layanan Python/agent) |
+
+**Response `200`:**
+```json
+{
+  "message": "Data berhasil dikirm",
+  "data": { }
+}
+```
+
+Objek `data` adalah **body JSON respons** dari layanan agent (struktur tergantung implementasi agent, mis. `reply`, `sources`, dll.).
+
+**Errors:**
+| HTTP | `message` (contoh) |
+|------|---------------------|
+| 400 | `Pesan tidak boleh kosong` (validasi di controller) |
+| 500 | `AI_AGENT_ERROR` (agent tidak jalan, koneksi ditolak, timeout, dll.) |
+| 500 | Teks dari `Error.message` lain (mis. `detail` dari body error agent jika `response.ok` false) |
+
+> Agent harus berjalan dan `AGENT_URL` harus mengarah ke service yang benar (mis. `http://localhost:8000`).
+
+---
+
+## 10. Error Umum
 
 | Code | Kondisi |
 |------|---------|

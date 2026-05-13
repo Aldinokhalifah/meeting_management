@@ -75,7 +75,7 @@ export default function ActionItemsSection({ meetingId, canEdit, participants = 
             {filtered.length === 0 ? (
                 <p className="text-sm text-gray-400 text-center py-4">Tidak ada action item</p>
             ) : (
-                <div className="space-y-1">
+                <div className="space-y-1 max-h-28 overflow-y-auto">
                 {filtered.map((item) => (
                     <div
                     key={item.id}

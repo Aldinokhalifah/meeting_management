@@ -40,7 +40,7 @@ export default function ParticipantsSection({ meetingId, participants = [], isHo
             </div>
 
             {/* List */}
-            <div className="space-y-1">
+            <div className="space-y-1 max-h-28 overflow-y-auto">
                 {participants.map((p) => {
                 const roleConf = ROLE_CONFIG[p.role] ?? ROLE_CONFIG.participant
                 const RoleIcon = roleConf.icon

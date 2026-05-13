@@ -9,7 +9,7 @@ const register = async (req, res, next) => {
         const user = await authService.register({ name, email, password });
         res.status(201).json({ message: 'Registrasi berhasil', data: user });
     } catch (err) {
-        res.status(500).json({ message: 'Gagal registrasi', error: err.message });
+        next(err);
     }
 }
 
@@ -22,7 +22,7 @@ const login = async (req, res, next) => {
         const result = await authService.login({ email, password });
         res.status(200).json({ message: 'Login berhasil', data: result });
     } catch (err) {
-        res.status(500).json({ message: 'Gagal login', error: err.message });
+        next(err);
     }
 }
 
