@@ -198,11 +198,14 @@ Pastikan sudah terinstall:
 
 ## 🚀 Instalasi & Setup
 
-### 1. Clone Repository
+### 1. Clone Repository & Repository AI Agent
 
 ```bash
 git clone https://github.com/Aldinokhalifah/meeting_management.git
 cd backend
+```
+```bash
+git clone https://github.com/Aldinokhalifah/ai_agent_meeting_management.git
 ```
 
 ### 2. Setup Database
