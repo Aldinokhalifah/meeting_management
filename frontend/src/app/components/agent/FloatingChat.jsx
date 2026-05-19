@@ -1,13 +1,20 @@
 'use client'
 
 import { useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { Bot, X } from 'lucide-react'
 import ChatWindow from './ChatWindow'
 import { useAgent } from '@/hooks/useAgents'
 
 export default function FloatingChat() {
+    const pathname = usePathname()
     const [isOpen, setIsOpen] = useState(false)
     const { messages, isLoading, sendMessage, clearMessages } = useAgent()
+
+    // Jangan tampilkan FloatingChat di halaman login dan register
+    if (pathname === '/Login' || pathname === '/Register') {
+        return null
+    }
 
     return (
         <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-3">

@@ -9,10 +9,22 @@ import toast from 'react-hot-toast'
 export default function MeetingRowMenu({ meeting, myRole, onEdit }) {
     const router = useRouter()
     const [open, setOpen] = useState(false)
+    const [position, setPosition] = useState({ top: 0, left: 0 })
     const ref = useRef(null)
     const { mutate: updateMeeting } = useUpdateMeeting()
     const { mutate: deleteMeeting } = useDeleteMeeting()
     const isHost = myRole === 'host'
+
+    // Calculate menu position for fixed positioning
+    useEffect(() => {
+        if (open && ref.current) {
+            const rect = ref.current.getBoundingClientRect()
+            setPosition({
+                top: rect.bottom + 8,
+                left: rect.right - 176, // w-44 = 11rem = 176px
+            })
+        }
+    }, [open])
 
     // Close kalau klik di luar
     useEffect(() => {
@@ -48,7 +60,10 @@ export default function MeetingRowMenu({ meeting, myRole, onEdit }) {
             </button>
 
             {open && (
-                <div className="absolute right-0 top-8 z-20 w-44 bg-white border border-gray-200 rounded-xl shadow-lg py-1 overflow-hidden">
+                <div className="fixed z-50 w-44 bg-white border border-gray-200 rounded-xl shadow-lg py-1 overflow-hidden" style={{
+                    top: `${position.top}px`,
+                    left: `${position.left}px`,
+                }}>
 
                 <button
                     onClick={() => { router.push(`/meeting/${meeting.id}`); setOpen(false) }}

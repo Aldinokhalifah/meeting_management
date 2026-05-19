@@ -37,7 +37,7 @@ export default function MeetingTable({ meetings = [], currentUserId, onEdit }) {
     )
 
     return (
-        <div className="overflow-x-auto overflow-y-auto min-h-30 max-h-80">
+        <div className="overflow-x-auto min-h-40 max-h-80">
             <table className="w-full text-sm">
                 <thead>
                     <tr className="border-b border-gray-100">
