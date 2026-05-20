@@ -7,19 +7,18 @@ const findUserByEmail = async (email) => {
 
 const findUserById = async (id) => {
     const result = await db.query(
-        // 'SELECT id, name, email, avatar_url, whatsapp_phone, created_at FROM users WHERE id = $1',
-        'SELECT id, name, email, avatar_url, created_at FROM users WHERE id = $1',
+        'SELECT id, name, email, avatar_url, whatsapp_phone, created_at FROM users WHERE id = $1',
         [id]
     )
     return result.rows[0] || null
 }
 
-const createUser = async ({ name, email, password_hash }) => {
+const createUser = async ({ name, email, password_hash, whatsapp_phone = null }) => {
     const result = await db.query(
-        `INSERT INTO users (name, email, password_hash)
-        VALUES ($1, $2, $3)
-        RETURNING id, name, email, created_at`,
-        [name, email, password_hash]
+        `INSERT INTO users (name, email, password_hash, whatsapp_phone)
+        VALUES ($1, $2, $3, $4)
+        RETURNING id, name, email, avatar_url, whatsapp_phone, created_at`,
+        [name, email, password_hash, whatsapp_phone]
     )
     return result.rows[0]
 }

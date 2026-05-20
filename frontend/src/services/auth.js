@@ -1,9 +1,9 @@
 import fetchClient from "@/lib/fetchClient";
 
-export const register = async ({ name, email, password }) => {
+export const register = async ({ name, email, password, whatsapp_phone }) => {
     return await fetchClient('/auth/register', {
         method: 'POST',
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, password, whatsapp_phone }),
     });
 }
 

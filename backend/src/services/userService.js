@@ -8,6 +8,51 @@ const searchUsers = async (keyword) => {
     return await userRepo.searchUsers(keyword.trim());
 }
 
+const parseWhatsappPhone = (whatsapp_phone) => {
+    if (whatsapp_phone === null || String(whatsapp_phone).trim() === '') {
+        return null
+    }
+    const normalizedWa = normalizeIndonesiaWhatsapp(whatsapp_phone)
+    if (!normalizedWa) {
+        const e = new Error('Nomor WhatsApp tidak valid')
+        e.status = 400
+        throw e
+    }
+    return normalizedWa
+}
+
+const setWhatsappPhone = async (id, whatsapp_phone) => {
+    const user = await userRepo.findUserById(id)
+    if (!user) throw new Error('USER_NOT_FOUND')
+    if (user.whatsapp_phone) throw new Error('WHATSAPP_PHONE_ALREADY_EXISTS')
+
+    const normalized = parseWhatsappPhone(whatsapp_phone)
+    const updated = await userRepo.updateUser(id, { whatsapp_phone: normalized })
+    if (!updated) throw new Error('USER_NOT_FOUND')
+    return updated
+}
+
+const updateWhatsappPhone = async (id, whatsapp_phone) => {
+    const user = await userRepo.findUserById(id)
+    if (!user) throw new Error('USER_NOT_FOUND')
+    if (!user.whatsapp_phone) throw new Error('WHATSAPP_PHONE_NOT_SET')
+
+    const normalized = parseWhatsappPhone(whatsapp_phone)
+    const updated = await userRepo.updateUser(id, { whatsapp_phone: normalized })
+    if (!updated) throw new Error('USER_NOT_FOUND')
+    return updated
+}
+
+const deleteWhatsappPhone = async (id) => {
+    const user = await userRepo.findUserById(id)
+    if (!user) throw new Error('USER_NOT_FOUND')
+    if (!user.whatsapp_phone) throw new Error('WHATSAPP_PHONE_NOT_SET')
+
+    const updated = await userRepo.clearWhatsappPhone(id)
+    if (!updated) throw new Error('USER_NOT_FOUND')
+    return updated
+}
+
 const updateProfile = async (id, { name, email, avatar_url, whatsapp_phone }) => {
     if (!name || !name.trim()) throw new Error('INVALID_NAME')
 
@@ -25,17 +70,7 @@ const updateProfile = async (id, { name, email, avatar_url, whatsapp_phone }) =>
     if (avatar_url !== undefined) patch.avatar_url = avatar_url
 
     if (whatsapp_phone !== undefined) {
-        if (whatsapp_phone === null || String(whatsapp_phone).trim() === '') {
-            patch.whatsapp_phone = null
-        } else {
-            const normalizedWa = normalizeIndonesiaWhatsapp(whatsapp_phone)
-            if (!normalizedWa) {
-                const e = new Error('Nomor WhatsApp tidak valid')
-                e.status = 400
-                throw e
-            }
-            patch.whatsapp_phone = normalizedWa
-        }
+        patch.whatsapp_phone = parseWhatsappPhone(whatsapp_phone)
     }
 
     const updated = await userRepo.updateUser(id, patch)
@@ -59,4 +94,11 @@ const updatePassword = async (id, { current_password, new_password }) => {
     await userRepo.updatePassword(id, password_hash)
 }
 
-module.exports = { searchUsers, updateProfile, updatePassword }
+module.exports = {
+    searchUsers,
+    updateProfile,
+    updatePassword,
+    setWhatsappPhone,
+    updateWhatsappPhone,
+    deleteWhatsappPhone,
+}

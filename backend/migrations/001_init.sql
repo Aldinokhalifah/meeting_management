@@ -9,6 +9,8 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
+ALTER TABLE users ADD COLUMN IF NOT EXISTS whatsapp_phone VARCHAR(32);
+
 -- 1. Indexing untuk Tabel Users
 -- Email sudah otomatis di-index karena UNIQUE constraint.
 -- Index pada 'name' berguna jika ada fitur search user berdasarkan nama.

@@ -29,6 +29,43 @@ const updateProfile = async (req, res, next) => {
     }
 }
 
+const setWhatsappPhone = async (req, res, next) => {
+    try {
+        const { whatsapp_phone } = req.body
+        if (!whatsapp_phone) {
+            return res.status(400).json({ message: 'Nomor WhatsApp wajib diisi' })
+        }
+
+        const updated = await userService.setWhatsappPhone(req.user.id, whatsapp_phone)
+        res.status(201).json({ message: 'Nomor WhatsApp berhasil ditambahkan', data: updated })
+    } catch (err) {
+        next(err)
+    }
+}
+
+const updateWhatsappPhone = async (req, res, next) => {
+    try {
+        const { whatsapp_phone } = req.body
+        if (!whatsapp_phone) {
+            return res.status(400).json({ message: 'Nomor WhatsApp wajib diisi' })
+        }
+
+        const updated = await userService.updateWhatsappPhone(req.user.id, whatsapp_phone)
+        res.status(200).json({ message: 'Nomor WhatsApp berhasil diubah', data: updated })
+    } catch (err) {
+        next(err)
+    }
+}
+
+const deleteWhatsappPhone = async (req, res, next) => {
+    try {
+        const updated = await userService.deleteWhatsappPhone(req.user.id)
+        res.status(200).json({ message: 'Nomor WhatsApp berhasil dihapus', data: updated })
+    } catch (err) {
+        next(err)
+    }
+}
+
 const updatePassword = async (req, res, next) => {
     try {
         const { current_password, new_password } = req.body
@@ -42,4 +79,11 @@ const updatePassword = async (req, res, next) => {
     }
 }
 
-module.exports = { searchUsers, updateProfile, updatePassword }
+module.exports = {
+    searchUsers,
+    updateProfile,
+    updatePassword,
+    setWhatsappPhone,
+    updateWhatsappPhone,
+    deleteWhatsappPhone,
+}

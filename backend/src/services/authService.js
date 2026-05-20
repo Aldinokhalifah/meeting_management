@@ -1,8 +1,9 @@
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const authRepo = require('../repositories/authRepository')
+const { normalizeIndonesiaWhatsapp } = require('../utils/normalizePhone')
 
-const register = async ({name, email, password}) => {
+const register = async ({ name, email, password, whatsapp_phone }) => {
     // Validasi format email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) throw new Error('INVALID_EMAIL_FORMAT');
@@ -24,8 +25,19 @@ const register = async ({name, email, password}) => {
     const existing = await authRepo.findUserByEmail(email);
     if (existing) throw new Error('EMAIL_ALREADY_EXISTS');
 
+    let normalizedWhatsapp = null
+    if (whatsapp_phone !== undefined && whatsapp_phone !== null && String(whatsapp_phone).trim() !== '') {
+        normalizedWhatsapp = normalizeIndonesiaWhatsapp(whatsapp_phone)
+        if (!normalizedWhatsapp) throw new Error('INVALID_WHATSAPP_PHONE')
+    }
+
     const password_hash = await bcrypt.hash(password, 10);
-    const user = await authRepo.createUser({ name, email, password_hash });  // jadikan object
+    const user = await authRepo.createUser({
+        name,
+        email,
+        password_hash,
+        whatsapp_phone: normalizedWhatsapp,
+    });
 
     return user;
 }
@@ -43,7 +55,16 @@ const login = async ({ email, password }) => {
         { expiresIn: process.env.JWT_EXPIRES_IN }
     );
 
-    return { token, user: { id: user.id, name: user.name, email: user.email, created_at: user.created_at } };
+    return {
+        token,
+        user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            whatsapp_phone: user.whatsapp_phone,
+            created_at: user.created_at,
+        },
+    };
 }
 
 const getMe = async (userId) => {

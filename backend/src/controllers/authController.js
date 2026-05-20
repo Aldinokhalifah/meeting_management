@@ -2,11 +2,11 @@ const authService = require('../services/authService');
 
 const register = async (req, res, next) => {
     try {
-        const { name, email, password } = req.body;
+        const { name, email, password, whatsapp_phone } = req.body;
         if (!name || !email || !password)
         return res.status(400).json({ message: 'Semua field wajib diisi' });
 
-        const user = await authService.register({ name, email, password });
+        const user = await authService.register({ name, email, password, whatsapp_phone });
         res.status(201).json({ message: 'Registrasi berhasil', data: user });
     } catch (err) {
         next(err);

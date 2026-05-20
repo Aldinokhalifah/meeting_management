@@ -1,5 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { searchUsers, updateProfile, updatePassword } from '@/services/user'
+import {
+    searchUsers,
+    updateProfile,
+    updatePassword,
+    setWhatsappPhone,
+    updateWhatsappPhone,
+    deleteWhatsappPhone,
+} from '@/services/user'
 import toast from 'react-hot-toast'
 
 export const useSearchUsers = (keyword) => {
@@ -40,6 +47,59 @@ export const useUpdatePassword = () => {
         },
         onError: (err) => {
             toast.error(err.message || 'Gagal memperbarui password')
+        },
+    })
+}
+
+const syncWhatsappToLocalStorage = (res) => {
+    const stored = localStorage.getItem('user')
+    if (stored && res?.data) {
+        const user = JSON.parse(stored)
+        localStorage.setItem('user', JSON.stringify({ ...user, ...res.data }))
+    }
+}
+
+export const useSetWhatsappPhone = () => {
+    const queryClient = useQueryClient()
+    return useMutation({
+        mutationFn: (body) => setWhatsappPhone(body),
+        onSuccess: (res) => {
+            toast.success(res.message)
+            syncWhatsappToLocalStorage(res)
+            queryClient.invalidateQueries({ queryKey: ['me'] })
+        },
+        onError: (err) => {
+            toast.error(err.message || 'Gagal menambahkan nomor WhatsApp')
+        },
+    })
+}
+
+export const useUpdateWhatsappPhone = () => {
+    const queryClient = useQueryClient()
+    return useMutation({
+        mutationFn: (body) => updateWhatsappPhone(body),
+        onSuccess: (res) => {
+            toast.success(res.message)
+            syncWhatsappToLocalStorage(res)
+            queryClient.invalidateQueries({ queryKey: ['me'] })
+        },
+        onError: (err) => {
+            toast.error(err.message || 'Gagal memperbarui nomor WhatsApp')
+        },
+    })
+}
+
+export const useDeleteWhatsappPhone = () => {
+    const queryClient = useQueryClient()
+    return useMutation({
+        mutationFn: () => deleteWhatsappPhone(),
+        onSuccess: (res) => {
+            toast.success(res.message)
+            syncWhatsappToLocalStorage(res)
+            queryClient.invalidateQueries({ queryKey: ['me'] })
+        },
+        onError: (err) => {
+            toast.error(err.message || 'Gagal menghapus nomor WhatsApp')
         },
     })
 }

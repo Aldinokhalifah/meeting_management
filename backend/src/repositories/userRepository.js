@@ -2,44 +2,40 @@ const db = require('../config/db');
 
 const searchUsers = async (keyword) => {
     const result = await db.query(
-        `SELECT id, name, email, avatar_url FROM users WHERE 
+        `SELECT id, name, email, avatar_url, whatsapp_phone FROM users WHERE 
         name ILIKE  $1 OR email ILIKE $1`, [`%${keyword}%`]
     );
     return result.rows;
 }
 
-// const ALLOWED_USER_PATCH = new Set(['name', 'email', 'avatar_url', 'whatsapp_phone'])
+const ALLOWED_USER_PATCH = new Set(['name', 'email', 'avatar_url', 'whatsapp_phone'])
 
-// /**
-//  * Hanya kolom yang nilainya !== undefined yang di-update (boleh set whatsapp_phone ke NULL).
-//  */
-// const updateUser = async (id, patch) => {
-//     const entries = Object.entries(patch).filter(
-//         ([k, v]) => ALLOWED_USER_PATCH.has(k) && v !== undefined
-//     )
-//     if (entries.length === 0) {
-//         return findUserById(id)
-//     }
-//     const setClause = entries.map(([col], i) => `${col} = $${i + 1}`).join(', ')
-//     const values = entries.map(([, val]) => val)
-//     values.push(id)
-//     const result = await db.query(
-//         `UPDATE users SET ${setClause} WHERE id = $${values.length}
-//             RETURNING id, name, email, avatar_url, whatsapp_phone, created_at`,
-//         values
-//     )
-//     return result.rows[0] || null
-// }
-
-const updateUser = async (id, { name, email, avatar_url }) => {
+/**
+ * Hanya kolom yang nilainya !== undefined yang di-update (boleh set whatsapp_phone ke NULL).
+ */
+const updateUser = async (id, patch) => {
+    const entries = Object.entries(patch).filter(
+        ([k, v]) => ALLOWED_USER_PATCH.has(k) && v !== undefined
+    )
+    if (entries.length === 0) {
+        return findUserById(id)
+    }
+    const setClause = entries.map(([col], i) => `${col} = $${i + 1}`).join(', ')
+    const values = entries.map(([, val]) => val)
+    values.push(id)
     const result = await db.query(
-        `UPDATE users
-        SET name = COALESCE($1, name),
-            email = COALESCE($2, email),
-            avatar_url = COALESCE($3, avatar_url)
-        WHERE id = $4
-        RETURNING id, name, email, avatar_url, created_at`,
-        [name, email, avatar_url, id]
+        `UPDATE users SET ${setClause} WHERE id = $${values.length}
+            RETURNING id, name, email, avatar_url, whatsapp_phone, created_at`,
+        values
+    )
+    return result.rows[0] || null
+}
+
+const clearWhatsappPhone = async (id) => {
+    const result = await db.query(
+        `UPDATE users SET whatsapp_phone = NULL WHERE id = $1
+            RETURNING id, name, email, avatar_url, whatsapp_phone, created_at`,
+        [id]
     )
     return result.rows[0] || null
 }
@@ -59,4 +55,10 @@ const findUserById = async (id) => {
     return result.rows[0] || null
 }
 
-module.exports = {searchUsers, updateUser, updatePassword, findUserById};
+module.exports = {
+    searchUsers,
+    updateUser,
+    clearWhatsappPhone,
+    updatePassword,
+    findUserById,
+};

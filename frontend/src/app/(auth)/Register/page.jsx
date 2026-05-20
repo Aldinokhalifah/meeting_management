@@ -12,6 +12,7 @@ export default function RegisterPage() {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
+        whatsapp_phone: '',
         password: '',
         confirmPassword: '',
     });
@@ -45,6 +46,7 @@ export default function RegisterPage() {
                 name: formData.name,
                 email: formData.email,
                 password: formData.password,
+                whatsapp_phone: formData.whatsapp_phone.trim() || undefined,
             });
             toast.success('Registrasi berhasil! Silakan login.');
             router.push('/Login');
@@ -111,6 +113,23 @@ export default function RegisterPage() {
                         required
                         className="w-full h-10 px-3 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition"
                     />
+                    </div>
+
+                    <div className="space-y-1.5">
+                    <label htmlFor="whatsapp_phone" className="text-sm font-medium text-gray-700">
+                        Nomor WhatsApp
+                        <span className="text-gray-400 font-normal"> (opsional)</span>
+                    </label>
+                    <input
+                        id="whatsapp_phone"
+                        type="tel"
+                        placeholder="6281234567890"
+                        name="whatsapp_phone"
+                        value={formData.whatsapp_phone}
+                        onChange={handleChange}
+                        className="w-full h-10 px-3 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition"
+                    />
+                    <p className="text-xs text-gray-500">Format tanpa +, contoh: 6281234567890</p>
                     </div>
 
                     <div className="space-y-1.5">

@@ -17,3 +17,23 @@ export const updatePassword = async ({ current_password, new_password }) => {
         body: JSON.stringify({ current_password, new_password }),
     });
 }
+
+export const setWhatsappPhone = async ({ whatsapp_phone }) => {
+    return await fetchClient('/users/profile/whatsapp', {
+        method: 'POST',
+        body: JSON.stringify({ whatsapp_phone }),
+    });
+}
+
+export const updateWhatsappPhone = async ({ whatsapp_phone }) => {
+    return await fetchClient('/users/profile/whatsapp', {
+        method: 'PATCH',
+        body: JSON.stringify({ whatsapp_phone }),
+    });
+}
+
+export const deleteWhatsappPhone = async () => {
+    return await fetchClient('/users/profile/whatsapp', {
+        method: 'DELETE',
+    });
+}

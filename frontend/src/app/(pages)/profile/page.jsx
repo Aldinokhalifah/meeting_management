@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import ProfileAvatar from '@/app/components/profile/ProfileAvatar'
 import ProfileForm from '@/app/components/profile/ProfileForm'
 import PasswordForm from '@/app/components/profile/PasswordForm'
+import WhatsappForm from '@/app/components/profile/WhatsappForm'
 import Sidebar from '@/app/components/ui/SideBar'
 
 export default function ProfilePage() {
@@ -41,6 +42,13 @@ export default function ProfilePage() {
 
                     <div className="border-t border-gray-100 pt-4">
                         <ProfileForm user={user} onUpdate={handleUpdate} />
+                    </div>
+
+                    <div className="border-t border-gray-100 pt-4">
+                        <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-4">
+                            WhatsApp
+                        </p>
+                        <WhatsappForm user={user} onUpdate={handleUpdate} />
                     </div>
                     </div>
 

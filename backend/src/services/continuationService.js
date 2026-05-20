@@ -92,6 +92,18 @@ const createContinuation = async ({
         //         console.error(`[Email Error] Invitation to ${targetUser.email}:`, err.message)
         //     })
         // }
+        // if (targetUser.whatsapp_phone) {
+        //     waService
+        //         .sendInvitationWhatsApp({
+        //             recipientPhone: targetUser.whatsapp_phone,
+        //             recipientName: targetUser.name,
+        //             meeting,
+        //             hostName: host.name,
+        //         })
+        //         .catch((err) => {
+        //             console.error(`[WA Error] Invitation to ${targetUser.whatsapp_phone}:`, err.message)
+        //         })
+        // }
     }
 
     const openItems = await actionItemsRepo.getOpenActionItemsByMeetingId(source_meeting_id);
