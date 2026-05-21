@@ -3,9 +3,8 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { register } from '@/services/auth'
+import { useRegister } from '@/hooks/useAuth'
 import toast from 'react-hot-toast'
-import Image from 'next/image'
 
 export default function RegisterPage() {
     const router = useRouter();
@@ -18,6 +17,7 @@ export default function RegisterPage() {
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const { mutate: registerMutate, isPending } = useRegister()
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -41,21 +41,38 @@ export default function RegisterPage() {
 
         setLoading(true);
 
-        try {
-            await register({
+        registerMutate(
+            {
                 name: formData.name,
                 email: formData.email,
                 password: formData.password,
-                whatsapp_phone: formData.whatsapp_phone.trim() || undefined,
-            });
-            toast.success('Registrasi berhasil! Silakan login.');
-            router.push('/Login');
-        } catch (err) {
-            setError(err.message || 'Registrasi gagal');
-            toast.error(error);
-        } finally {
-            setLoading(false);
-        }
+                whatsapp_phone: formData.whatsapp_phone
+            },
+            {
+                onSuccess: () => {
+                    router.push('/Login');
+                }, 
+                onError: (err) => {
+                    setError(err.message || 'Registrasi gagal');
+                }
+            }
+        )
+
+        // try {
+        //     await register({
+        //         name: formData.name,
+        //         email: formData.email,
+        //         password: formData.password,
+        //         whatsapp_phone: formData.whatsapp_phone
+        //     });
+        //     toast.success('Registrasi berhasil! Silakan login.');
+        //     router.push('/Login');
+        // } catch (err) {
+        //     setError(err.message || 'Registrasi gagal');
+        //     toast.error(error);
+        // } finally {
+        //     setLoading(false);
+        // }
     }
 
     return (
@@ -88,7 +105,7 @@ export default function RegisterPage() {
                 {/* Form */}
                 <form onSubmit={handleRegister} className="space-y-4">
                     <div className="space-y-1.5">
-                    <label htmlFor="name" className="text-sm font-medium text-gray-700">Nama Lengkap</label>
+                    <label htmlFor="name" className="text-sm font-medium text-gray-700">Nama Lengkap</label> <span className="text-red-400">*</span>
                     <input
                         id="name"
                         type="text"
@@ -102,7 +119,7 @@ export default function RegisterPage() {
                     </div>
 
                     <div className="space-y-1.5">
-                    <label htmlFor="email" className="text-sm font-medium text-gray-700">Email</label>
+                    <label htmlFor="email" className="text-sm font-medium text-gray-700">Email</label> <span className="text-red-400">*</span>
                     <input
                         id="email"
                         type="email"
@@ -116,24 +133,24 @@ export default function RegisterPage() {
                     </div>
 
                     <div className="space-y-1.5">
-                    <label htmlFor="whatsapp_phone" className="text-sm font-medium text-gray-700">
-                        Nomor WhatsApp
-                        <span className="text-gray-400 font-normal"> (opsional)</span>
-                    </label>
+                    <label htmlFor="whatsapp_phone" className="text-sm font-medium text-gray-700">Nomor Whatsapp</label> <span className="text-red-400">*</span>
                     <input
                         id="whatsapp_phone"
-                        type="tel"
-                        placeholder="6281234567890"
+                        type="text"
+                        placeholder="62849101239"
                         name="whatsapp_phone"
                         value={formData.whatsapp_phone}
                         onChange={handleChange}
+                        required
                         className="w-full h-10 px-3 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition"
                     />
-                    <p className="text-xs text-gray-500">Format tanpa +, contoh: 6281234567890</p>
                     </div>
+                    <p className="text-xs text-gray-400">
+                        Format tanpa +, contoh: 6281234567890
+                    </p>
 
                     <div className="space-y-1.5">
-                    <label htmlFor="password" className="text-sm font-medium text-gray-700">Kata Sandi</label>
+                    <label htmlFor="password" className="text-sm font-medium text-gray-700">Kata Sandi</label> <span className="text-red-400">*</span>
                     <input
                         id="password"
                         type="password"
@@ -147,7 +164,7 @@ export default function RegisterPage() {
                     </div>
 
                     <div className="space-y-1.5">
-                    <label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">Konfirmasi Kata Sandi</label>
+                    <label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">Konfirmasi Kata Sandi</label> <span className="text-red-400">*</span>
                     <input
                         id="confirmPassword"
                         type="password"
@@ -162,10 +179,10 @@ export default function RegisterPage() {
 
                     <button
                     type="submit"
-                    disabled={loading}
+                    disabled={isPending}
                     className="w-full h-10 bg-yellow-600 hover:bg-yellow-700 disabled:bg-yellow-400 text-white text-sm font-semibold rounded-lg transition-colors mt-2"
                     >
-                    {loading ? (
+                    {isPending ? (
                         <span className="flex items-center justify-center gap-2">
                         <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />

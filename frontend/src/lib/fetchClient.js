@@ -15,18 +15,17 @@ const fetchClient = async (endpoint, options = {}) => {
         headers,
     });
 
-    // Kalau 401, token expired → hapus token & redirect ke login
-    if (response.status === 401) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        window.location.href = '/Login';
-        return;
-    }
-
     const data = await response.json();
 
-    // Kalau response tidak ok, throw error dengan message dari backend
     if (!response.ok) {
+        // Token expired pada request terautentikasi → redirect ke login
+        if (response.status === 401 && token) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            document.cookie = 'token=; path=/; max-age=0';
+            window.location.href = '/Login';
+            return;
+        }
         throw new Error(data.message || 'Terjadi kesalahan');
     }
 

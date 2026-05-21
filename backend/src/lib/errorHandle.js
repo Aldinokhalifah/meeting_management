@@ -33,6 +33,15 @@ const ERROR_MAP = {
     INVALID_DATE_FORMAT: { status: 400, message: 'Format tanggal tidak valid' },
     DUE_DATE_IN_THE_PAST: { status: 400, message: 'Due date tidak boleh di masa lalu' },
     INVALID_STATUS_FILTER: { status: 400, message: 'Status filter tidak valid, gunakan open, done, atau carried_over' },
+    ACTION_ITEM_NOT_FOUND: { status: 404, message: 'Action item tidak ditemukan' },
+    INVALID_ACTION_ITEM_STATUS: { status: 400, message: 'Status tidak valid, gunakan open, done, atau carried_over' },
+    ONLY_HOST_SECRETARY_CAN_CREATE_ACTION_ITEM: { status: 403, message: 'Hanya host dan secretary yang dapat membuat action item' },
+    ONLY_HOST_SECRETARY_CAN_DELETE_ACTION_ITEM: { status: 403, message: 'Hanya host dan secretary yang dapat menghapus action item' },
+    ONLY_HOST_SECRETARY_OR_ASSIGNEE_CAN_UPDATE: { status: 403, message: 'Hanya host, secretary, atau assignee yang dapat mengubah action item' },
+    ASSIGNEE_MUST_BE_PARTICIPANT: { status: 400, message: 'Assignee harus merupakan peserta meeting' },
+    ASSIGNEE_CANNOT_EDIT_ACTION_ITEM_FIELDS: { status: 403, message: 'Assignee hanya dapat mengubah status menjadi done' },
+    ASSIGNEE_CAN_ONLY_MARK_DONE: { status: 403, message: 'Assignee hanya dapat menandai action item sebagai done' },
+    ACTION_ITEM_CANNOT_BE_UPDATED: { status: 400, message: 'Action item yang sudah carried over tidak dapat diubah' },
 };
 
 module.exports = (err, req, res, next) => {

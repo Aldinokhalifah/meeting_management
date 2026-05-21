@@ -52,13 +52,13 @@ export default function ActionItemsSection({ meetings = [], currentUserId }) {
                 className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-gray-50 transition group"
             >
                 {/* Toggle done button */}
-                    {/* <button
-                    onClick={() => handleDone(item)}
-                    title="Tandai selesai"
-                    className="mt-0.5 shrink-0 text-gray-300 hover:text-green-500 transition"
-                    >
-                    <Circle size={16} />
-                </button> */}
+                    <button
+                        onClick={() => handleDone(item)}
+                        title="Tandai selesai"
+                        className="mt-0.5 shrink-0 text-gray-300 hover:text-green-500 transition"
+                        >
+                        <Circle size={16} />
+                    </button>
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">

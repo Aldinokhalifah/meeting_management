@@ -35,7 +35,7 @@ export default function RootLayout({ children }) {
           {children}
         </Provider>
         <FloatingChat />
-        </body>
+      </body>
     </html>
   );
 }

@@ -51,11 +51,11 @@ export const useUpdatePassword = () => {
     })
 }
 
-const syncWhatsappToLocalStorage = (res) => {
+const syncWhatsappToLocalStorage = (data) => {
     const stored = localStorage.getItem('user')
-    if (stored && res?.data) {
+    if (stored && data?.data) {
         const user = JSON.parse(stored)
-        localStorage.setItem('user', JSON.stringify({ ...user, ...res.data }))
+        localStorage.setItem('user', JSON.stringify({ ...user, ...data.data }))
     }
 }
 

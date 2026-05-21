@@ -18,18 +18,23 @@ const getActionItemById = async (id) => {
     return result.rows[0] || null;
 }
 
-const updateActionItem = async (id, { description, assigned_to, due_date, status }) => {
+const ALLOWED_ACTION_ITEM_PATCH = new Set(['description', 'assigned_to', 'due_date', 'status'])
+
+const updateActionItem = async (id, patch) => {
+    const entries = Object.entries(patch).filter(
+        ([k, v]) => ALLOWED_ACTION_ITEM_PATCH.has(k) && v !== undefined
+    )
+    if (entries.length === 0) {
+        return getActionItemById(id)
+    }
+    const setClause = entries.map(([col], i) => `${col} = $${i + 1}`).join(', ')
+    const values = entries.map(([, val]) => val)
+    values.push(id)
     const result = await db.query(
-        `UPDATE action_items
-        SET description = COALESCE($1, description),
-            assigned_to = COALESCE($2, assigned_to),
-            due_date = COALESCE($3, due_date),
-            status = COALESCE($4, status)
-        WHERE id = $5
-        RETURNING *`,
-        [description, assigned_to, due_date, status, id]
-    );
-    return result.rows[0] || null;
+        `UPDATE action_items SET ${setClause} WHERE id = $${values.length} RETURNING *`,
+        values
+    )
+    return result.rows[0] || null
 }
 
 const deleteActionItem = async (id) => {

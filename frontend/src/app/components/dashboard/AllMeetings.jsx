@@ -29,7 +29,7 @@ export default function AllMeetings({ meetings = [] }) {
     }, [meetings, activeTab])
 
     return (
-        <div className="bg-white border border-gray-200 rounded-xl p-4">
+        <div className="bg-white border border-gray-200 rounded-xl p-4 min-w-140">
             <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-3">
                 Semua Meeting
             </p>

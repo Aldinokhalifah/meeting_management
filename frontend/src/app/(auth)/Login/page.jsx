@@ -3,33 +3,31 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { login } from '@/services/auth'
-import toast from 'react-hot-toast'
-import Image from 'next/image'
+import { useLogin } from '@/hooks/useAuth'
 
 export default function LoginPage() {
-    const router = useRouter();
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
+    const router = useRouter()
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
+    const [error, setError] = useState('')
+    const { mutate: loginMutate, isPending } = useLogin()
 
-    const handleLogin = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setError('');
+    const handleLogin = (e) => {
+        e.preventDefault()
+        setError('')
 
-        try {
-            await login({ email, password });
-            toast.success('Login berhasil!');
-            router.push('/dashboard');
-            router.refresh();
-        } catch (err) {
-            setError(err.message || 'Login gagal');
-            toast.error(err.message || 'Login gagal'); 
-        } finally {
-            setLoading(false);
-        }
+        loginMutate(
+            { email, password },
+            {
+                onSuccess: () => {
+                    router.push('/dashboard')
+                    router.refresh()
+                },
+                onError: (err) => {
+                    setError(err?.message || 'Login gagal')
+                },
+            }
+        )
     }
 
     return (
@@ -37,33 +35,20 @@ export default function LoginPage() {
             <div className="w-full max-w-md">
                 <div className="bg-white rounded-2xl shadow-lg p-8">
 
-                {/* Logo */}
-                {/* <div className="flex items-center gap-2 mb-4">
-                    <Link href="/dashboard" className="flex items-center gap-2">
-                        <span className="font-bold text-sm md:text-lg text-gray-900 leading-tight">
-                            Login
-                        </span>
-                    </Link>
-
-                </div> */}
-
-                {/* Heading */}
                 <div className="mb-6">
                     <h1 className="text-2xl font-bold text-gray-900">Selamat Datang</h1>
                     <p className="text-sm text-gray-500 mt-1">Masuk ke meeting management</p>
                 </div>
 
-                {/* Error alert */}
-                {/* {error && (
+                {error && (
                     <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-600">
-                    {error}
+                        {error}
                     </div>
-                )} */}
+                )}
 
-                {/* Form */}
                 <form onSubmit={handleLogin} className="space-y-4">
                     <div className="space-y-1.5">
-                    <label htmlFor="email" className="text-sm font-medium text-gray-700">Email</label>
+                    <label htmlFor="email" className="text-sm font-medium text-gray-700">Email</label> <span className="text-red-400">*</span>
                     <input
                         id="email"
                         type="email"
@@ -76,7 +61,7 @@ export default function LoginPage() {
                     </div>
 
                     <div className="space-y-1.5">
-                    <label htmlFor="password" className="text-sm font-medium text-gray-700">Kata Sandi</label>
+                    <label htmlFor="password" className="text-sm font-medium text-gray-700">Kata Sandi</label> <span className="text-red-400">*</span>
                     <input
                         id="password"
                         type="password"
@@ -90,10 +75,10 @@ export default function LoginPage() {
 
                     <button
                     type="submit"
-                    disabled={loading}
+                    disabled={isPending}
                     className="w-full h-10 bg-yellow-600 hover:bg-yellow-700 disabled:bg-yellow-400 text-white text-sm font-semibold rounded-lg transition-colors mt-2"
                     >
-                    {loading ? (
+                    {isPending ? (
                         <span className="flex items-center justify-center gap-2">
                         <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
