@@ -36,7 +36,7 @@ CREATE INDEX idx_meetings_status ON meetings (status);
 CREATE INDEX idx_meetings_scheduled_at ON meetings (scheduled_at);
 -- Untuk mempermudah tracking histori meeting (self-reference).
 CREATE INDEX idx_meetings_previous_id ON meetings (previous_meeting_id);
-CREATE INDEX idx_title ON meetings (title);
+CREATE INDEX idx_meetings_title ON meetings (title);
 
 -- Tambah di tabel meetings
 ALTER TABLE meetings ADD COLUMN end_time TIMESTAMP;

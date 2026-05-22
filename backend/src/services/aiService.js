@@ -45,7 +45,7 @@ const generateMeetingSummary = async (meeting_id, user_id) => {
 
     // Kirim ke OpenRouter
     const response = await openrouter.chat.completions.create({
-        model: process.env.OPENROUTER_MODEL || 'openai/gpt-oss-20b:free',
+        model: process.env.OPENROUTER_MODEL || 'openai/gpt-oss-120b:free',
         messages: [{ role: 'user', content: promptText }],
         max_tokens: 1000,
         temperature: 0.3, // rendah agar output konsisten
