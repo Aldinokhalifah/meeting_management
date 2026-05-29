@@ -44,7 +44,7 @@ const register = async ({ name, email, password, whatsapp_phone }) => {
 
 const login = async ({ email, password }) => {
     const user = await authRepo.findUserByEmail(email);
-    if (!user) throw { status: 401, message: 'Email atau password salah' };
+    if (!user) throw { status: 401, message: 'Email tidak ditemukan' };
 
     const valid = await bcrypt.compare(password, user.password_hash)
     if (!valid) throw { status: 401, message: 'Email atau password salah' };
