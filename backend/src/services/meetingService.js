@@ -2,7 +2,8 @@ const meetingRepo = require('../repositories/meetingRepository');
 const authRepo = require('../repositories/authRepository');
 const aiService = require('./aiService');
 const emailService = require('./emailService')
-const waService = require('./waService')
+const waService = require('./waService');
+const ROOMS = require('../utils/room');
 
 const createMeeting = async ({ title, description, scheduled_at, end_time, location, participant_ids = [], previous_meeting_id = null }, created_by) => {
     if (!title || !scheduled_at) throw new Error('TITLE_AND_SCHEDULE_REQUIRED');
@@ -214,8 +215,17 @@ const updateParticipantRole = async (meeting_id, user_id, target_user_id, role) 
     return updated;
 }
 
+const getRoomsStatus = async () => {
+    const activeMeetings = await meetingRepo.getActiveMeetingsByLocation();
+
+    return ROOMS.map((room) => {
+        const isOccupied = activeMeetings.some((m) => m.location === room.name);
+        return { name: room.name, capacity: room.capacity, status: isOccupied ? 'occupied' : 'available' };
+    });
+}
+
 module.exports = {
     createMeeting, getMeetings, getMeetingDetail,
     updateMeeting, deleteMeeting, addParticipant, removeParticipant,
-    updateParticipantRole
+    updateParticipantRole, getRoomsStatus
 };

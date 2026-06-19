@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getMeetings, getMeetingById, createMeeting, updateMeeting, deleteMeeting, addParticipant, removeParticipant, updateParticipantRole, } from '@/services/meeting'
+import { getMeetings, getMeetingById, createMeeting, updateMeeting, deleteMeeting, addParticipant, removeParticipant, updateParticipantRole, getRoomsStatus, } from '@/services/meeting'
 import toast from 'react-hot-toast'
 
 export const useMeetings = () => {
@@ -104,5 +104,15 @@ export const useUpdateParticipantRole = () => {
         onError: (err) => {
             toast.error(err.message || "Gagal memperbarui peserta");
         }
+    })
+}
+
+export const useRoomsStatus = () => {
+    return useQuery({
+        queryKey: ['rooms-status'],
+        queryFn: getRoomsStatus,
+        staleTime: 10000,
+        refetchInterval: 30000,
+        select: (data) => data.data,
     })
 }

@@ -8,6 +8,7 @@ router.use(authMiddleware);
 
 router.post('/', meetingController.createMeeting);
 router.get('/', meetingController.getMeetings);
+router.get('/rooms/status', meetingController.getRoomsStatus);
 router.get('/:id', meetingController.getMeetingDetail);
 router.patch('/:id', meetingController.updateMeeting);
 router.delete('/:id', meetingController.deleteMeeting);

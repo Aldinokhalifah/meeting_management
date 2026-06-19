@@ -138,9 +138,22 @@ const updateParticipantRole = async (meeting_id, user_id, role) => {
     return result.rows[0] || null;
 }
 
+const getActiveMeetingsByLocation = async () => {
+    const result = await db.query(
+        `SELECT location, status, scheduled_at, end_time
+        FROM meetings
+        WHERE location IS NOT NULL
+        AND (
+            status = 'ongoing'
+            OR (status = 'scheduled' AND NOW() BETWEEN scheduled_at AND end_time)
+        )`
+    );
+    return result.rows;
+}
+
 module.exports = {
     createMeeting, addParticipant, getMeetingByUser, getMeetingById, 
     getParticipantsByMeetingId, isParticipant, getUserRole, 
     updateMeeting, deleteMeeting, removeParticipant,
-    checkScheduleConflict, updateParticipantRole, checkRoomAvailable
+    checkScheduleConflict, updateParticipantRole, checkRoomAvailable, getActiveMeetingsByLocation
 };

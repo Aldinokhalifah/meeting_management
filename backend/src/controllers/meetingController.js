@@ -87,6 +87,15 @@ const updateParticipantRole = async (req, res, next) => {
     }
 }
 
+const getRoomsStatus = async (req, res, next) => {
+    try {
+        const roomStatus = await meetingService.getRoomsStatus();
+        res.status(200).json({ message: 'Berhasil mengambil data meeting', data: roomStatus });
+    } catch (err) {
+        next(err);
+    }
+}
+
 module.exports = {
     createMeeting,
     getMeetings,
@@ -95,5 +104,6 @@ module.exports = {
     deleteMeeting,
     addParticipant,
     removeParticipant,
-    updateParticipantRole
+    updateParticipantRole,
+    getRoomsStatus
 };

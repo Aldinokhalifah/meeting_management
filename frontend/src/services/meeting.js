@@ -4,6 +4,10 @@ export const getMeetings = async () => {
     return await fetchClient('/meetings');
 }
 
+export const getRoomsStatus = async () => {
+    return await fetchClient('/meetings/rooms/status');
+}
+
 export const getMeetingById = async (id) => {
     return await fetchClient(`/meetings/${id}`);
 }
