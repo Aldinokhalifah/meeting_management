@@ -12,6 +12,7 @@ const continuationRoute = require('./src/routes/continuation');
 const userRoute = require('./src/routes/user');
 const aiRoute = require('./src/routes/ai');
 const agentRoute = require('./src/routes/agent')
+const {globalLimiter} = require('./src/middleware/rateLimiter')
 
 const app = express()
 
@@ -19,6 +20,10 @@ app.use(express.json())
 app.use(helmet())
 app.use(cors())
 app.use(express.urlencoded({ extended: true })); 
+app.use(globalLimiter)
+
+// dipakai jika deploy memakai Nginx agar IP terbaca oleh Nginx
+// app.set('trust proxy', 1)
 
 // Routes
 app.use('/api/auth', authRoute);
