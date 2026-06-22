@@ -44,6 +44,7 @@ ALTER TABLE meetings ADD COLUMN location VARCHAR(255);
 
 -- Index untuk end_time (berguna untuk query cek bentrok)
 CREATE INDEX idx_meetings_end_time ON meetings (end_time);
+CREATE INDEX idx_meetings_location ON meetings (location);
 
 CREATE TABLE meeting_participants (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
