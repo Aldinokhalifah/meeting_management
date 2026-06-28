@@ -29,7 +29,7 @@ export default function AllMeetings({ meetings = [] }) {
     }, [meetings, activeTab])
 
     return (
-        <div className="bg-white border border-gray-200 rounded-xl p-4 min-w-140">
+        <div className="bg-white border border-gray-200 rounded-xl p-4 w-full">
             <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-3">
                 Semua Meeting
             </p>
@@ -57,14 +57,14 @@ export default function AllMeetings({ meetings = [] }) {
                 Tidak ada meeting
                 </div>
             ) : (
-                <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
+                <div className="space-y-1 max-h-48 overflow-y-auto pr-1 overflow-x-hidden">
                 {filtered.map((m) => {
                     const status = STATUS_STYLE[m.status] ?? STATUS_STYLE.scheduled
                     return (
                     <Link
                         key={m.id}
                         href={`/meeting/${m.id}`}
-                        className="flex items-center border border-gray-100 justify-between p-3 rounded-lg hover:bg-gray-50 transition group"
+                        className="w-full flex items-center border border-gray-100 justify-between p-3 rounded-lg hover:bg-gray-50 transition group"
                     >
                         <div className="min-w-0 flex-1">
                             <p className="text-sm font-medium text-gray-800 truncate group-hover:text-yellow-700 transition flex ">
@@ -83,7 +83,7 @@ export default function AllMeetings({ meetings = [] }) {
                                 )}
                             </div>
                         </div>
-                        <span className={`text-xs font-medium px-2 py-0.5 rounded-md shrink-0 ml-3 ${status.className}`}>
+                        <span className={`text-xs font-medium px-2 py-0.5 rounded-md shrink-0 ml-3 max-w-24 truncate text-right ${status.className}`}>
                             {status.label}
                         </span>
                     </Link>

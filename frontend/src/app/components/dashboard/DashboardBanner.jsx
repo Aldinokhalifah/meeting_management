@@ -9,7 +9,8 @@ export default function DashboardBanner({ meetings = [] }) {
     const todayCount = useMemo(() => {
         return meetings.filter(
             (m) => new Date(m.scheduled_at).toDateString() === today
-        ).length
+        )
+        .filter((m) => m.status !== 'done').length
     }, [meetings, today]);
 
     if (todayCount === 0) return (

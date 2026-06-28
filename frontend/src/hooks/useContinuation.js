@@ -6,9 +6,10 @@ export const usePreviousMeeting = (meeting_id, previous_meeting_id) => {
     return useQuery({
         queryKey: ['previous-meeting', meeting_id, previous_meeting_id],
         queryFn: () => getPreviousMeeting(meeting_id, previous_meeting_id),
-        enabled: !!meeting_id || !!previous_meeting_id,
+        enabled: !!meeting_id && !!previous_meeting_id,
         select: (data) => data.data,
-        staleTime: 1000 * 60 * 10
+        staleTime: 1000 * 60 * 10,
+        retry: false,
     })
 }
 

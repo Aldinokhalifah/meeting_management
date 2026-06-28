@@ -3,11 +3,15 @@ require('dotenv').config()
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
+    max: 10,
+    idleTimeoutMillis: 30000,        // tutup koneksi idle setelah 30s
+    connectionTimeoutMillis: 5000,   // jangan nunggu koneksi kosong tanpa batas
+    keepAlive: true,                 // kirim TCP keepalive, cegah network drop koneksi idle
 })
 
 pool.on('error', (err) => {
     console.error('Unexpected DB error', err)
-    process.exit(-1)
+    // process.exit(-1)
 })
 
 async function testConnection() {

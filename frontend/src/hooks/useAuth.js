@@ -1,5 +1,7 @@
-import { useMutation } from '@tanstack/react-query'
-import { login, register } from '@/services/auth'
+import { useCallback } from 'react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useRouter } from 'next/navigation'
+import { login, register, logout as logoutService } from '@/services/auth'
 import toast from 'react-hot-toast'
 
 export const useLogin = () => {
@@ -24,4 +26,15 @@ export const useRegister = () => {
             toast.error(err?.message)
         }
     })
+}
+
+export const useLogout = () => {
+    const queryClient = useQueryClient()
+    const router = useRouter()
+
+    return useCallback(() => {
+        logoutService()
+        queryClient.clear()
+        router.push('/Login')
+    }, [queryClient, router])
 }

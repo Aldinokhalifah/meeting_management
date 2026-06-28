@@ -111,8 +111,8 @@ export const useRoomsStatus = () => {
     return useQuery({
         queryKey: ['rooms-status'],
         queryFn: getRoomsStatus,
-        staleTime: 10000,
-        refetchInterval: 30000,
+        staleTime: 100000,
+        refetchInterval: 300000,
         select: (data) => data.data,
     })
 }

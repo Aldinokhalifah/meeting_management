@@ -29,7 +29,9 @@ const Prompt = (title, scheduled_at, location, description, noteText, participan
         Daftarkan poin keputusan yang disepakati. Jika tidak ada keputusan yang tercatat, cukup tulis: "Tidak ada keputusan spesifik yang dicatat."
 
         ### 3. Langkah Selanjutnya (Action Items)
-        Sajikan secara efisien dalam bentuk tabel. 
+        Data diambil dari daftar tugas pada data input
+        Sajikan secara efisien dalam bentuk bullet points. 
+        *Jika ada daftar tugas yang kamu buat sendiri cantumkan note bahwa daftar tugas ini disarankan oleh AI*
         *Jika tidak ada tugas sama sekali, bagian ini boleh dilewati atau ditulis singkat: "Tidak ada tindak lanjut yang dicatat."*
 
         ### 4. Highlight & Catatan Penting

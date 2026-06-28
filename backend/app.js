@@ -16,14 +16,14 @@ const {globalLimiter} = require('./src/middleware/rateLimiter')
 
 const app = express()
 
+// dipakai jika deploy memakai Nginx agar IP terbaca oleh Nginx
+app.set('trust proxy', 1)
+
 app.use(express.json())
 app.use(helmet())
-app.use(cors())
+app.use(cors()) 
 app.use(express.urlencoded({ extended: true })); 
 app.use(globalLimiter)
-
-// dipakai jika deploy memakai Nginx agar IP terbaca oleh Nginx
-// app.set('trust proxy', 1)
 
 // Routes
 app.use('/api/auth', authRoute);

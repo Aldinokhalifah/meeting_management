@@ -2,8 +2,8 @@ const rateLimit = require('express-rate-limit')
 
 // Limiter umum untuk semua request — proteksi dasar
 const globalLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 menit
-    max: 100,
+    windowMs: 1 * 60 * 1000, // 1 menit
+    max: 300,
     message: { message: 'Terlalu banyak request, coba lagi nanti' },
     standardHeaders: true,
     legacyHeaders: false,
@@ -35,7 +35,7 @@ const agentLimiter = rateLimit({
     message: { message: 'Terlalu banyak permintaan ke AI Agent, mohon tunggu sebentar' },
     standardHeaders: true,
     legacyHeaders: false,
-    keyGenerator: (req) => req.user?.id || req.ip, // ← limit per user, bukan per IP
+    keyGenerator: (req) => req.user?.id || ipKeyGenerator(req.ip), // ← limit per user, bukan per IP
 })
 
 module.exports = { globalLimiter, loginLimiter, registerLimiter, agentLimiter }

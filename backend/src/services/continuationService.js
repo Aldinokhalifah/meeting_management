@@ -3,6 +3,8 @@ const actionItemsRepo = require('../repositories/actionItemRepository');
 const continuationRepo = require('../repositories/continuationRepository');
 const emailService = require('./emailService');
 const authRepo = require('../repositories/authRepository');
+const waService = require('../services/waService');
+const { isValidUUID } = require('../utils/validateUuid');
 
 const createContinuation = async ({
     source_meeting_id,
@@ -79,8 +81,8 @@ const createContinuation = async ({
         });
 
         // Kirim email undangan untuk peserta baru
-        // const targetUser = await authRepo.findUserById(p.user_id)
-        // const host = await authRepo.findUserById(user_id)
+        const targetUser = await authRepo.findUserById(p.user_id)
+        const host = await authRepo.findUserById(user_id)
 
         // if (targetUser) {
         //     emailService.sendInvitationEmail({
@@ -92,18 +94,17 @@ const createContinuation = async ({
         //         console.error(`[Email Error] Invitation to ${targetUser.email}:`, err.message)
         //     })
         // }
-        // if (targetUser.whatsapp_phone) {
-        //     waService
-        //         .sendInvitationWhatsApp({
-        //             recipientPhone: targetUser.whatsapp_phone,
-        //             recipientName: targetUser.name,
-        //             meeting,
-        //             hostName: host.name,
-        //         })
-        //         .catch((err) => {
-        //             console.error(`[WA Error] Invitation to ${targetUser.whatsapp_phone}:`, err.message)
-        //         })
-        // }
+        if (targetUser.whatsapp_phone) {
+            waService.sendInvitationWhatsApp({
+                    recipientPhone: targetUser.whatsapp_phone,
+                    recipientName: targetUser.name,
+                    meeting: newMeeting,
+                    hostName: host.name,
+                })
+                .catch((err) => {
+                    console.error(`[WA Error] Invitation to ${targetUser.whatsapp_phone}:`, err.message)
+                })
+        }
     }
 
     const openItems = await actionItemsRepo.getOpenActionItemsByMeetingId(source_meeting_id);
@@ -128,6 +129,9 @@ const createContinuation = async ({
 }
 
 const getPreviousMeeting = async (continuation_meeting_id, user_id) => {
+    if (!isValidUUID(continuation_meeting_id)) {
+        throw new Error('INVALID_MEETING_ID')
+    }
     // Cek meeting continuation ada
     const continuationMeeting = await meetingRepo.getMeetingById(continuation_meeting_id);
     if (!continuationMeeting) throw new Error('Meeting tidak ditemukan');

@@ -29,7 +29,7 @@ export default function Dashboard() {
         )
     }
     return(
-        <div className="flex flex-col md:flex-row w-full bg-white">
+        <div className="flex flex-col lg:flex-row w-full bg-white">
             <Sidebar />
             <div className="p-4 md:p-6 space-y-4 max-w-7xl mx-auto">
                 {/* Header */}
@@ -45,7 +45,7 @@ export default function Dashboard() {
                 <DashboardBanner meetings={meetings} />
 
                 {/* Bento Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-[1fr_320px] gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4">
 
                     {/* Kolom Kiri */}
                     <div className="space-y-4">

@@ -30,6 +30,4 @@ export const logout = () => {
 
     // Hapus cookie
     document.cookie = 'token=; path=/; max-age=0';
-
-    window.location.href = '/login';
 }

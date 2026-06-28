@@ -48,7 +48,7 @@ export default function MeetingPage() {
     )
 
     return (
-        <div className="flex flex-col md:flex-row w-full bg-white min-h-screen">
+        <div className="flex flex-col lg:flex-row w-full bg-white min-h-screen">
             <Sidebar />
             <div className="flex-1 overflow-auto p-4 sm:p-5 md:p-6 space-y-4">
 

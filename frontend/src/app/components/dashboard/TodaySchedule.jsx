@@ -12,6 +12,7 @@ export default function TodaySchedule({ meetings = [] }) {
     const todayMeetings = useMemo(() => {
         return meetings
             .filter((m) => new Date(m.scheduled_at).toDateString() === today)
+            .filter((m) => m.status !== 'done')
             .sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at))
     }, [meetings, today]);
 

@@ -42,6 +42,7 @@ const ERROR_MAP = {
     ASSIGNEE_CANNOT_EDIT_ACTION_ITEM_FIELDS: { status: 403, message: 'Assignee hanya dapat mengubah status menjadi done' },
     ASSIGNEE_CAN_ONLY_MARK_DONE: { status: 403, message: 'Assignee hanya dapat menandai action item sebagai done' },
     ACTION_ITEM_CANNOT_BE_UPDATED: { status: 400, message: 'Action item yang sudah carried over tidak dapat diubah' },
+    INVALID_MEETING_ID: { status: 400, message: 'ID meeting tidak valid' },
 };
 
 module.exports = (err, req, res, next) => {

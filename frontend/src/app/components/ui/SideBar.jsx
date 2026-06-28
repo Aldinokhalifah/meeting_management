@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { LayoutDashboard, CalendarDays, User, LogOut, Menu, X, ChevronRight } from 'lucide-react'
-import { logout } from '@/services/auth'
+import { useLogout } from '@/hooks/useAuth'
 
 const navItems = [
     { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -15,18 +15,17 @@ const navItems = [
 export default function Sidebar() {
     const pathname = usePathname();
     const router = useRouter();
+    const logout = useLogout()
     const [collapsed, setCollapsed] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
-    const [user, setUser] = useState(null);
-
-    useEffect(() => {
-        const stored = localStorage.getItem('user');
-        if (stored) setUser(JSON.parse(stored));
-    }, [])
+    const [user, setUser] = useState(() => {
+        if (typeof window === 'undefined') return null
+        const stored = localStorage.getItem('user')
+        return stored ? JSON.parse(stored) : null
+    })
 
     const handleLogout = () => {
-        logout();
-        router.push('/Login');
+        logout()
     }
 
     const isActive = (href) => pathname === href || pathname.startsWith(href + '/');

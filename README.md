@@ -35,7 +35,7 @@ Aplikasi manajemen meeting internal berbasis web yang dibangun untuk PT. Probesc
 ### Advanced Features
 - **AI Insight** — Ringkasan otomatis meeting menggunakan LLM setelah meeting selesai
 - **Email Notification** — Kirim undangan meeting dan ringkasan otomatis via email ⚠️ *(saat ini dinonaktifkan — lihat [Fitur Notifikasi](#fitur-notifikasi))*
-- **WhatsApp Notification** — Kirim notifikasi via WhatsApp Business API 🚧 *(belum aktif — menunggu WA Business API key)*
+- **WhatsApp Notification** — Kirim notifikasi via WhatsApp Business API 
 - **AI Agent (Chatbot)** — Asisten floating chat untuk mengelola meeting menggunakan bahasa natural
 - **Room Management** — Tampilan status ketersediaan ruang rapat secara real-time
 - **Cek Jadwal Bentrok** — Validasi otomatis jadwal meeting yang bertabrakan
@@ -103,7 +103,7 @@ Aplikasi manajemen meeting internal berbasis web yang dibangun untuk PT. Probesc
                                       │ API Call
                           ┌───────────▼───────────────────┐
                           │    OpenRouter API              │
-                          │  (deepseek/gpt-oss model)     │
+                          │  (llama/gpt-oss model)     │
                           └───────────────────────────────┘
 ```
 
@@ -292,7 +292,7 @@ DATABASE_URL=postgresql://postgres:password@localhost:5432/meeting_app
 
 # JWT
 JWT_SECRET=your_super_secret_jwt_key_here
-JWT_EXPIRES_IN=7d
+JWT_EXPIRES_IN=1d
 
 # Frontend URL (untuk CORS)
 FRONTEND_URL=http://localhost:3000
@@ -472,6 +472,7 @@ Informasi:
 • Notulen meeting
 • AI Summary meeting
 • Meeting minggu ini
+• Mengirim notifikasi melalui WhatsApp
 ```
 
 ### Contoh Perintah
@@ -530,8 +531,7 @@ FROM_EMAIL=noreply@yourdomain.com
 
 ### 💬 WhatsApp (via WhatsApp Business API)
 
-> 🚧 **Status: Belum aktif — menunggu WhatsApp Business API key**
-> Fitur WhatsApp sudah dirancang untuk mengirimkan notifikasi yang sama seperti email, namun implementasinya menunggu akses WhatsApp Business API.
+> Fitur WhatsApp sudah dirancang untuk mengirimkan notifikasi yang sama seperti email.
 
 **Provider yang direkomendasikan:**
 

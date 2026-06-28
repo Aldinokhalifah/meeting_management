@@ -15,7 +15,7 @@ export default function ChatWindow({ onClose, messages, isLoading, onSend, onCle
     }, [messages, isLoading])
 
     return (
-        <div className="flex flex-col w-90 h-120 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
+        <div className="flex flex-col w-[min(90vw,360px)] max-w-[90vw] h-[min(80vh,600px)] bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
 
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 bg-yellow-600">

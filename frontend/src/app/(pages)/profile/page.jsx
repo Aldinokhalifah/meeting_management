@@ -20,7 +20,7 @@ export default function ProfilePage() {
     }
 
     return (
-        <div className="flex flex-col md:flex-row w-full bg-white">
+        <div className="flex flex-col lg:flex-row w-full bg-white">
             <Sidebar />
             <div className="p-4 md:p-6 space-y-4 max-w-7xl mx-auto">
                 {/* Header */}
