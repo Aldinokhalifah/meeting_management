@@ -36,8 +36,6 @@ export const useAgent = () => {
             .slice(1)
             .map((m) => ({ role: m.role, content: m.content }))
 
-        // console.log('[useAgent] Sending history:', history.length, 'messages')
-
         const result = await sendChatMessage({
             message,
             conversation_history: history,

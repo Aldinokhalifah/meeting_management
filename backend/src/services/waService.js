@@ -22,7 +22,6 @@ const sendInvitationWhatsApp = async ({ recipientPhone, recipientName, meeting, 
         hostName,
     })
     const result = await sendWhatsAppText({ to, message })
-    console.log(`✓ WA undangan → ${to}`)
     return result
 }
 
@@ -59,7 +58,6 @@ const sendMeetingSummaryWhatsApps = async (meeting_id) => {
                 myActionItems,
             })
             const result = await sendWhatsAppText({ to, message })
-            console.log(`✓ WA ringkasan meeting → ${participant.name} (${to})`)
             return { status: 'fulfilled', user_id: participant.id, result }
         } catch (err) {
             console.error(`✗ WA ringkasan gagal → ${participant.name}:`, err.message)
@@ -69,7 +67,6 @@ const sendMeetingSummaryWhatsApps = async (meeting_id) => {
 
     const results = await Promise.all(tasks)
     const ok = results.filter((r) => r.status === 'fulfilled').length
-    console.log(`[WA Summary] meeting ${meeting_id}: ${ok}/${results.length} terkirim`)
     return results
 }
 

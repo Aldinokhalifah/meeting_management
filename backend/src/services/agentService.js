@@ -1,9 +1,4 @@
 const agentChat = async ({ message, userId, conversationHistory = [] }) => {
-    // console.log('[agentService] Forwarding to Python:', {
-    //     message,
-    //     user_id: userId,
-    //     conversation_history_count: conversationHistory.length,
-    // })
     try {
         const response = await fetch(`${process.env.AGENT_URL}/chat`, {
             method: 'POST',

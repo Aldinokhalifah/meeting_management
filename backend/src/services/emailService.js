@@ -24,7 +24,6 @@ const sendInvitationEmail = async ({ recipientEmail, recipientName, meeting, hos
                 hostName,
             }),
         })
-        console.log(`✓ Email undangan dikirim ke ${recipientEmail}:`, result)
         return result
     } catch (err) {
         console.error(`✗ Gagal kirim email ke ${recipientEmail}:`, err.message)
@@ -68,7 +67,6 @@ const sendInvitationEmail = async ({ recipientEmail, recipientName, meeting, hos
                     myActionItems,
                 }),
             })
-            console.log(`✓ Email ringkasan dikirim ke ${participant.email}:`, result)
             return result
         } catch (err) {
             console.error(`✗ Gagal kirim email ke ${participant.email}:`, err.message)
@@ -78,7 +76,6 @@ const sendInvitationEmail = async ({ recipientEmail, recipientName, meeting, hos
 
     // Kirim semua email secara parallel
     const results = await Promise.allSettled(emailPromises)
-    console.log(`Summary: ${results.filter(r => r.status === 'fulfilled').length}/${results.length} email berhasil`)
 }
 
 module.exports = { sendInvitationEmail, sendMeetingSummaryEmails }
