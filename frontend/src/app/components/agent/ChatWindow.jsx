@@ -25,9 +25,6 @@ export default function ChatWindow({ onClose, messages, isLoading, onSend, onCle
                 </div>
                 <div>
                     <p className="text-white text-sm font-medium leading-none">Meeting Assistant</p>
-                    <p className="text-yellow-200 text-xs mt-0.5">
-                    {isLoading ? 'Sedang mengetik...' : 'Online'}
-                    </p>
                 </div>
                 </div>
                 <div className="flex items-center gap-1">
