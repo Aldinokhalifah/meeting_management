@@ -23,13 +23,13 @@ export const useUpdateProfile = () => {
     const queryClient = useQueryClient()
     return useMutation({
         mutationFn: (body) => updateProfile(body),
-        onSuccess: (_, data) => {
-            toast.success(_.message);
+        onSuccess: (response) => {
+            toast.success(response.message);
             // Update data user di localStorage
             const stored = localStorage.getItem('user')
             if (stored) {
                 const user = JSON.parse(stored)
-                localStorage.setItem('user', JSON.stringify({ ...user, ...data.data }))
+                localStorage.setItem('user', JSON.stringify({ ...user, ...response.data }))
             }
             queryClient.invalidateQueries({ queryKey: ['me'] })
             },
