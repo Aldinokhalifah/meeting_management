@@ -49,7 +49,7 @@ export const useAgent = () => {
         setMessages((prev) => [...prev, assistantMessage])
 
         } catch (err) {
-            toast.error('AI Agent tidak tersedia, coba lagi nanti')
+            toast.error(err.message || 'AI Agent tidak tersedia, coba lagi nanti')
             setMessages((prev) => prev.slice(0, -1))
         } finally {
             setIsLoading(false)

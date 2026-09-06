@@ -21,6 +21,9 @@ const chat = async (req, res, next) => {
         });
     } catch (error) {
         next(error)
+        res.status(error.status || 500).json({
+            message: error.message || 'Terjadi kesalahan',
+        })
     }
 }
 
