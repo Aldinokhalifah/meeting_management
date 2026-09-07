@@ -1,5 +1,4 @@
-import OpenAI from 'openai'
-import openrouter from '../config/openrouter';
+const openrouter = require('../config/openrouter');
 
 const FALLBACK_MODELS = [
     process.env.OPENROUTER_MODEL || 'nvidia/nemotron-3-super-120b-a12b:free',
@@ -11,7 +10,7 @@ const FALLBACK_MODELS = [
 // Status code error di tingkat API Key (langsung ganti key, skip sisa model)
 const KEY_LEVEL_STATUS = [401, 402, 403];
 
-export const chatCompletionsWithFallback = async (options) => {
+const chatCompletionsWithFallback = async (options) => {
     // Ambil API keys dari env (bisa single key atau multiple diseparat koma)
     const rawKeys = process.env.OPENROUTER_API_KEYS || process.env.OPENROUTER_API_KEY || '';
     const apiKeys = rawKeys.split(',').map((k) => k.trim()).filter(Boolean);
@@ -64,3 +63,5 @@ export const chatCompletionsWithFallback = async (options) => {
     console.error('[OpenRouter Fallback] Semua kombinasi API key dan model telah dicoba dan gagal.', lastError);
     throw new Error('LLM_SERVICE_UNAVAILABLE');
 };
+
+module.exports = chatCompletionsWithFallback;

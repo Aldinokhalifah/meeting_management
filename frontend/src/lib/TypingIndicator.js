@@ -1,7 +1,9 @@
+import { Bot } from "lucide-react";
+
 export const TypingIndicator = () => (
     <div className="flex justify-start">
         <div className="w-6 h-6 rounded-full bg-yellow-500 flex items-center justify-center shrink-0 mt-1 mr-2">
-        <span className="text-white text-xs">🤖</span>
+        <Bot size={16} className="text-white text-xs"/>
         </div>
         <div className="bg-gray-100 px-3 py-2.5 rounded-2xl rounded-tl-sm">
         <div className="flex gap-1 items-center">
