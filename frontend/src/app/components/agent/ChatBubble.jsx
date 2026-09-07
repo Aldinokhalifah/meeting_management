@@ -1,3 +1,4 @@
+import { Bot } from 'lucide-react'
 import React, { memo } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -54,7 +55,7 @@ const markdownComponents = {
         <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
             {!isUser && (
                 <div className="w-6 h-6 rounded-full bg-yellow-500 flex items-center justify-center flex-shrink-0 mt-1 mr-2">
-                <span className="text-white text-xs">🤖</span>
+                <Bot size={16} className="text-white text-xs"/>
                 </div>
             )}
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { X, Trash2 } from 'lucide-react'
+import { X, Trash2, Bot } from 'lucide-react'
 import ChatBubble from './ChatBubble'
 import ChatInput from './ChatInput'
 import { TypingIndicator } from '@/lib/TypingIndicator'
@@ -20,12 +20,12 @@ export default function ChatWindow({ onClose, messages, isLoading, onSend, onCle
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 bg-yellow-600">
                 <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full bg-yellow-500 border-2 border-yellow-400 flex items-center justify-center">
-                    <span className="text-sm">🤖</span>
-                </div>
-                <div>
-                    <p className="text-white text-sm font-medium leading-none">Meeting Assistant</p>
-                </div>
+                    <div className="w-7 h-7 rounded-full bg-yellow-500 border-2 border-yellow-400 flex items-center justify-center">
+                        <Bot size={20} className="text-white" />
+                    </div>
+                    <div>
+                        <p className="text-white text-sm font-medium leading-none">Meeting Assistant</p>
+                    </div>
                 </div>
                 <div className="flex items-center gap-1">
                 <button
