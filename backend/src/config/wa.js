@@ -30,9 +30,15 @@ const sendWhatsAppText = async ({ to, message }) => {
         parsed = { raw: text }
     }
 
+    // 1. Cek HTTP status code (4xx / 5xx)
     if (!res.ok) {
         const detail = typeof parsed === 'object' ? JSON.stringify(parsed) : text
-        throw new Error(`WhatsApp API gagal (${res.status}): ${detail}`)
+        throw new Error(`WhatsApp API HTTP Error (${res.status}): ${detail}`)
+    }
+
+    // 2. Cek response logic dari Fonnte (status: false)
+    if (parsed && parsed.status === false) {
+        throw new Error(`Fonnte Rejected: ${parsed.reason || parsed.message || JSON.stringify(parsed)}`)
     }
 
     return parsed

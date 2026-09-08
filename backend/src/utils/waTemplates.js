@@ -23,7 +23,7 @@ const invitationMessage = ({ recipientName, meetingTitle, scheduledAt, endTime, 
         `📅 ${formatDate(scheduledAt)}`,
         `⏰ ${timeRange}`,
     ]
-    if (location) lines.push(`📍 ${location}`)
+    if (location) lines.push(`🏢 ${location}`)
     lines.push(`👤 Host: ${hostName}`)
     lines.push('', 'Sampai jumpa di meeting.')
     return lines.join('\n')
