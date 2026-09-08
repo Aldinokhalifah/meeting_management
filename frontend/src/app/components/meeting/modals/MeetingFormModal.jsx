@@ -128,7 +128,7 @@ export default function MeetingFormModal({ isOpen, onClose, meeting = null }) {
                     className={inputClass}
                     />
                 </InputField>
-                <InputField label="Selesai">
+                <InputField label="Selesai" required>
                     <input
                     type="datetime-local"
                     name="end_time"
@@ -139,7 +139,7 @@ export default function MeetingFormModal({ isOpen, onClose, meeting = null }) {
                 </InputField>
                 </div>
 
-                <InputField label="Lokasi / Ruangan">
+                <InputField label="Lokasi / Ruangan" required>
                 <select
                     name="location"
                     value={form.location}

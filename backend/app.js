@@ -2,7 +2,7 @@ require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
 const helmet = require('helmet')
-const errorHandler = require('./src/middleware/errorHandler')
+const errorHandler = require('./src/middleware/errorHandle')
 const {testConnection} = require('./src/config/db')
 const authRoute = require('./src/routes/auth')
 const meetingRoute = require('./src/routes/meeting');
