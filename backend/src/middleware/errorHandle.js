@@ -36,7 +36,7 @@ const ERROR_MAP = {
     INVALID_NAME: { status: 400, message: 'Nama tidak boleh kosong' },
     EMAIL_ALREADY_EXISTS: { status: 409, message: 'Email sudah terdaftar' },
     INVALID_WHATSAPP_PHONE: { status: 400, message: 'Nomor WhatsApp tidak valid' },
-    WHATSAPP_PHONE_ALREADY_EXISTS: { status: 409, message: 'Nomor WhatsApp sudah terdaftar di profil ini' },
+    WHATSAPP_PHONE_ALREADY_EXISTS: { status: 409, message: 'Nomor WhatsApp sudah terdaftar' },
     WHATSAPP_PHONE_NOT_SET: { status: 404, message: 'Nomor WhatsApp belum diatur' },
     INVALID_TITLE: { status: 400, message: 'Title tidak boleh kosong' },
     INVALID_DATETIME_FORMAT: { status: 400, message: 'Format datetime tidak valid' },

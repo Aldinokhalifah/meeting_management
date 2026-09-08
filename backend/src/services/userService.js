@@ -24,7 +24,9 @@ const parseWhatsappPhone = (whatsapp_phone) => {
 const setWhatsappPhone = async (id, whatsapp_phone) => {
     const user = await userRepo.findUserById(id)
     if (!user) throw new Error('USER_NOT_FOUND')
-    if (user.whatsapp_phone) throw new Error('WHATSAPP_PHONE_ALREADY_EXISTS')
+
+    const existingWhatsappPhone = await userRepo.findUserByWhatsappPhone(whatsapp_phone);
+    if (existingWhatsappPhone) throw new Error('WHATSAPP_PHONE_ALREADY_EXISTS')
 
     const normalized = parseWhatsappPhone(whatsapp_phone)
     const updated = await userRepo.updateUser(id, { whatsapp_phone: normalized })
@@ -35,7 +37,11 @@ const setWhatsappPhone = async (id, whatsapp_phone) => {
 const updateWhatsappPhone = async (id, whatsapp_phone) => {
     const user = await userRepo.findUserById(id)
     if (!user) throw new Error('USER_NOT_FOUND')
-    if (!user.whatsapp_phone) throw new Error('WHATSAPP_PHONE_NOT_SET')
+
+    const existingWhatsappPhone = await userRepo.findUserByWhatsappPhone(whatsapp_phone);
+    if (existingWhatsappPhone) throw new Error('WHATSAPP_PHONE_ALREADY_EXISTS')
+
+    if (!whatsapp_phone) throw new Error('WHATSAPP_PHONE_NOT_SET')
 
     const normalized = parseWhatsappPhone(whatsapp_phone)
     const updated = await userRepo.updateUser(id, { whatsapp_phone: normalized })

@@ -83,10 +83,13 @@ const updateMeeting = async (meeting_id, user_id, body) => {
         throw new Error('END_TIME_BEFORE_START_TIME');
     }
 
-    const checkRoomAvailable = await meetingRepo.checkRoomAvailable(body.location, body.scheduled_at, body.end_time);
-    if(checkRoomAvailable) {
-        throw new Error('SCHEDULE_CONFLICT_ROOM');
+    if(body.location !== meeting.location) {
+        const checkRoomAvailable = await meetingRepo.checkRoomAvailable(body.location, body.scheduled_at, body.end_time);
+        if(checkRoomAvailable) {
+            throw new Error('SCHEDULE_CONFLICT_ROOM');
+        }
     }
+
 
 
     const updated =  await meetingRepo.updateMeeting(meeting_id, body);

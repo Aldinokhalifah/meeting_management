@@ -22,8 +22,10 @@ const register = async ({ name, email, password, whatsapp_phone }) => {
     // Validasi name tidak boleh hanya spasi
     if (!name.trim()) throw new Error('INVALID_NAME');
 
-    // const existing = await authRepo.findUserByEmail(email);
-    // if (existing) throw new Error('EMAIL_ALREADY_EXISTS');
+    const existingWhatsappPhone = await authRepo.findUserByWhatsappPhone(whatsapp_phone);
+    if(existingWhatsappPhone) {
+        throw new Error('WHATSAPP_PHONE_ALREADY_EXISTS')
+    }
 
     let normalizedWhatsapp = null
     if (whatsapp_phone !== undefined && whatsapp_phone !== null && String(whatsapp_phone).trim() !== '') {

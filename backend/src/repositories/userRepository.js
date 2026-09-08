@@ -8,6 +8,11 @@ const searchUsers = async (keyword) => {
     return result.rows;
 }
 
+const findUserByWhatsappPhone = async (whatsapp_phone) => {
+    const result = await db.query('SELECT whatsapp_phone FROM users WHERE whatsapp_phone = $1', [whatsapp_phone]);
+    return result.rows[0]
+}
+
 const ALLOWED_USER_PATCH = new Set(['name', 'email', 'avatar_url', 'whatsapp_phone'])
 
 /**
@@ -58,6 +63,7 @@ const findUserById = async (id) => {
 module.exports = {
     searchUsers,
     updateUser,
+    findUserByWhatsappPhone,
     clearWhatsappPhone,
     updatePassword,
     findUserById,

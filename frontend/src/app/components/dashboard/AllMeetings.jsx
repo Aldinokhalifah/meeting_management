@@ -9,6 +9,7 @@ import { formatTime } from '@/lib/formatTime'
 const TABS = [
     { key: 'upcoming', label: 'Upcoming' },
     { key: 'done',     label: 'Selesai' },
+    { key: 'cancelled',     label: 'Batal' },
     { key: 'all',      label: 'Semua' },
 ]
 
@@ -23,7 +24,8 @@ export default function AllMeetings({ meetings = [] }) {
     const filtered = useMemo(() => {
             return meetings.filter((m) => {
                 if (activeTab === 'upcoming') return ['scheduled', 'ongoing'].includes(m.status)
-                if (activeTab === 'done') return ['done', 'cancelled'].includes(m.status)
+                if (activeTab === 'done') return ['done'].includes(m.status)
+                if (activeTab === 'cancelled') return ['cancelled'].includes(m.status)
                 return true
         })
     }, [meetings, activeTab])
