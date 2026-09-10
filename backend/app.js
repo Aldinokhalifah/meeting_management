@@ -16,12 +16,26 @@ const {globalLimiter} = require('./src/middleware/rateLimiter')
 
 const app = express()
 
+const allowedOrigins = [process.env.APP_URL, process.env.AGENT_URL]
+    .filter(Boolean)
+    .map((url) => new URL(url).origin)
+
+const corsOptions = {
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            return callback(null, true)
+        }
+
+        return callback(new Error('Origin tidak diizinkan oleh kebijakan CORS'))
+    },
+}
+
 // dipakai jika deploy memakai Nginx agar IP terbaca oleh Nginx
 app.set('trust proxy', 1)
 
 app.use(express.json())
 app.use(helmet())
-app.use(cors()) 
+app.use(cors(corsOptions))
 app.use(express.urlencoded({ extended: true })); 
 app.use(globalLimiter)
 
