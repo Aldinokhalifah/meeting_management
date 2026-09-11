@@ -1,370 +1,544 @@
-# Deploy Meeting Management
+# 🚀 Deployment Guide — Meeting Management App (Windows VM)
 
-## Persiapan Sebelum Deploy
+Panduan deploy aplikasi Meeting Management ke Windows Server VM menggunakan GUI (Remote Desktop / UltraViewer), NSSM sebagai process manager, dan IIS sebagai reverse proxy.
 
-### Yang Harus Disiapkan
-- ✅ Akses SSH ke server kantor (IP, username, password/SSH key)
-- ✅ Domain atau subdomain (opsional, bisa pakai IP saja dulu)
-- ✅ Source code di Git repository (GitHub/GitLab)
-- ✅ Environment variables (.env) untuk ketiga service
-- ✅ OpenRouter API key, Resend API key (kalau email diaktifkan)
+---
 
-## Urutan Langkah Deploy
-1. Setup server dasar (update, firewall, user)
-2. Install dependencies (Node.js, Python, PostgreSQL, Nginx)
-3. Setup database
-4. Clone & setup backend (Express)
-5. Clone & setup frontend (Next.js)
-6. Clone & setup Python AI Agent
-7. Setup PM2 untuk process management
-8. Setup Nginx reverse proxy
-9. Setup SSL (kalau ada domain)
-10. Testing & monitoring
+## 📋 Arsitektur Deployment
 
-## Setup Server Dasar
+```
+Browser (LAN Kantor)
+       │
+       ▼
+IIS (port 80) — Reverse Proxy
+       ├── /api/*  → Backend Express.js (localhost:5000)
+       └── /*      → Frontend Next.js   (localhost:3000)
 
-```bash
-# SSH ke server
-ssh username@ip-server-kantor
-
-# Update sistem
-sudo apt update && sudo apt upgrade -y
-
-# Setup firewall dasar
-sudo ufw allow OpenSSH
-sudo ufw allow 80
-sudo ufw allow 443
-sudo ufw enable
-
-# Cek status
-sudo ufw status
+Backend Express.js (localhost:5000)
+       │
+       ├── PostgreSQL (localhost:5432)
+       └── Python AI Agent (localhost:8000) — dipanggil internal, tidak lewat IIS
 ```
 
-## Install Dependencies
+Ketiga service (backend, frontend, AI agent) dijalankan sebagai **Windows Service** via NSSM, sehingga otomatis jalan tanpa perlu terminal manual dan auto-start saat VM restart.
+
+---
+
+## 📦 Prerequisites
+
+- Akses Remote Desktop / UltraViewer ke VM
+- VM Windows (Server atau Windows 10/11) dengan koneksi internet
+- Repository Git (backend + frontend jadi satu repo, Python agent repo terpisah)
+- Environment variables yang sudah disiapkan (lihat bagian [Environment Variables](#-environment-variables))
+
+---
+
+## 🗂️ Urutan Langkah Deploy
+
+```
+1.  Install dependencies dasar (Node.js, Python, PostgreSQL, Git)
+2.  Setup database via pgAdmin
+3.  Clone repository
+4.  Setup & test Backend (Express) secara manual
+5.  Setup & test Frontend (Next.js) secara manual
+6.  Setup & test Python AI Agent secara manual
+7.  Install & konfigurasi NSSM (ubah 3 service jadi Windows Service)
+8.  Install & konfigurasi IIS (reverse proxy)
+9.  Update environment variables sesuai IP VM
+10. Testing end-to-end
+```
+
+---
+
+## 1️⃣ Install Dependencies Dasar
 
 ### Node.js
+```
+Download installer LTS dari nodejs.org
+Install seperti biasa (Next → Next → Finish)
+Pastikan "Add to PATH" tercentang
 
-```bash
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-sudo apt install -y nodejs
-node -v   # pastikan v20+
+Verifikasi (buka Command Prompt):
+node -v
 npm -v
 ```
 
 ### Python
+```
+Download installer dari python.org (versi 3.10+)
+⚠️ WAJIB centang "Add Python to PATH" di halaman awal installer
+Klik "Install Now"
 
-```bash
-sudo apt install -y python3 python3-pip python3-venv
-python3 --version   # pastikan 3.10+
+Verifikasi:
+python --version
 ```
 
 ### PostgreSQL
-
-```bash
-sudo apt install -y postgresql postgresql-contrib
-sudo systemctl enable postgresql
-sudo systemctl start postgresql
+```
+Download installer dari postgresql.org (EnterpriseDB installer)
+Installer ini sudah include pgAdmin (GUI database)
+Saat instalasi, set & catat password untuk user 'postgres'
 ```
 
-### Nginx
-
-```bash
-sudo apt install -y nginx
-sudo systemctl enable nginx
-sudo systemctl start nginx
+### Git for Windows
+```
+Download dari git-scm.com
+Install dengan opsi default
 ```
 
-### PM2 (process manager global)
+> ⚠️ **Catatan PowerShell:** Kalau muncul error `npm.ps1 cannot be loaded because running scripts is disabled`, jalankan ini di PowerShell **as Administrator**:
+> ```powershell
+> Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+> ```
+> Ketik `Y` untuk konfirmasi, lalu buka PowerShell baru.
 
-```bash
-sudo npm install -g pm2
+---
+
+## 2️⃣ Setup Database via pgAdmin
+
+```
+Buka pgAdmin dari Start Menu
+→ Klik kanan "Databases" → Create → Database
+→ Nama: meeting_app
+
+Jalankan migration:
+→ Klik database meeting_app → Query Tool
+→ Copy-paste isi file migrations/001_init.sql
+→ Klik Execute (▶)
+→ Ulangi untuk file ALTER TABLE tambahan (end_time, location, 
+   ai_summary, index, dll) jika terpisah
 ```
 
-## Setup Database
+---
 
-```bash
-sudo -u postgres psql
+## 3️⃣ Clone Repository
 
--- Di dalam psql:
-CREATE DATABASE meeting_app;
-CREATE USER meeting_user WITH ENCRYPTED PASSWORD 'password_yang_kuat';
-GRANT ALL PRIVILEGES ON DATABASE meeting_app TO meeting_user;
-\q
-
-jalankan migration:
-psql -U meeting_user -d meeting_app -h localhost -f migrations/001_init.sql
+```cmd
+cd C:\Users\<username>\Downloads
+git clone <url-repo-meeting-management>
+git clone <url-repo-ai-meeting-management>
 ```
 
-## Clone & Setup Backend
+Struktur folder hasil clone:
+```
+meeting_management/
+├── backend/
+└── frontend/
 
-```bash
-cd /var/www
-sudo mkdir meeting-management
-sudo chown $USER:$USER meeting-management
-cd meeting-management
+ai_meeting_management/
+└── (Python FastAPI project)
+```
 
-git clone <repo-url> .
-cd backend
+---
+
+## 4️⃣ Setup & Test Backend (Express)
+
+```cmd
+cd meeting_management\backend
 npm install
 ```
 
-### Buat `.env` production
-
-```bash
-nano .env
+Buat file `.env`:
+```cmd
+notepad .env
 ```
-
-Isi file `.env`:
 
 ```env
 PORT=5000
 NODE_ENV=production
-DATABASE_URL=postgresql://meeting_user:password_yang_kuat@localhost:5432/meeting_app
-JWT_SECRET=ganti_dengan_random_string_panjang
+DATABASE_URL=postgresql://postgres:<password>@localhost:5432/meeting_management
+JWT_SECRET=<random_string_panjang>
 JWT_EXPIRES_IN=1d
-FRONTEND_URL=https://meeting.namadomain.com
-OPENROUTER_API_KEY=your_key
+FRONTEND_URL=http://<ip-vm>
+OPENROUTER_API_KEY=<your_key>
 OPENROUTER_MODEL=openai/gpt-oss-120b:free
 AGENT_URL=http://localhost:8000
-RESEND_API_KEY=your_key
-FROM_EMAIL=noreply@namadomain.com
 ```
 
-### Test manual sebelum PM2
-
-```bash
-node src/app.js
-# Pastikan tidak error, lalu Ctrl+C
+Test jalan manual:
+```cmd
+node src\app.js
 ```
 
-## Clone & Setup Frontend
+Pastikan muncul `Server running on port 5000` dan `PostgreSQL: connected`. Tekan `Ctrl+C` untuk stop.
 
-```bash
-cd /var/www/meeting-management/frontend
+---
+
+## 5️⃣ Setup & Test Frontend (Next.js)
+
+```cmd
+cd ..\frontend
 npm install
 ```
 
-### Buat `.env.local` production
-
-```bash
-nano .env.local
+Buat file `.env.local`:
+```cmd
+notepad .env.local
 ```
-
-Isi file `.env.local`:
 
 ```env
-NEXT_PUBLIC_API_URL=https://meeting.namadomain.com/api
+NEXT_PUBLIC_API_URL=http://<ip-vm>/api
 ```
 
-### Build untuk production
-
-```bash
+Build untuk production:
+```cmd
 npm run build
 ```
 
-## Setup Python AI Agent
+Test jalan manual:
+```cmd
+npm run start
+```
 
-```bash
-cd /var/www/meeting-management/python-agent
-python3 -m venv venv
-source venv/bin/activate
+Buka `http://localhost:3000` di browser VM — pastikan halaman login muncul.
+
+---
+
+## 6️⃣ Setup & Test Python AI Agent
+
+```cmd
+cd C:\Users\<username>\Downloads\ai_meeting_management
+python -m venv venv
+venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### Buat `.env`
-
-```bash
-nano .env
+Buat file `.env`:
+```cmd
+notepad .env
 ```
 
-Isi file `.env`:
-
 ```env
-DATABASE_URL=postgresql://meeting_user:password_yang_kuat@localhost:5432/meeting_app
-OPENROUTER_API_KEY=your_key
+DATABASE_URL=postgresql://postgres:<password>@localhost:5432/meeting_app
+OPENROUTER_API_KEY=<your_key>
 OPENROUTER_MODEL=openai/gpt-oss-120b:free
 APP_HOST=0.0.0.0
 APP_PORT=8000
 ```
 
-### Test manual dulu
-
-```bash
+Test jalan manual:
+```cmd
 python main.py
-# Pastikan tidak error, lalu Ctrl+C
 ```
 
-## Setup PM2 untuk Semua Service
+Cek `http://localhost:8000/health` di browser VM.
 
-Buat file konfigurasi PM2 di root project — `ecosystem.config.js`:
+✅ **Checkpoint:** Pastikan ketiga service sudah bisa jalan manual bersamaan (3 terminal terbuka) dan aplikasi bisa dipakai end-to-end sebelum lanjut ke NSSM.
 
-```js
-module.exports = {
-  apps: [
-    {
-      name: 'meeting-backend',
-      cwd: '/var/www/meeting-management/backend',
-      script: 'src/app.js',
-      env: { NODE_ENV: 'production' },
-      instances: 1,
-      autorestart: true,
-      max_memory_restart: '300M',
-    },
-    {
-      name: 'meeting-frontend',
-      cwd: '/var/www/meeting-management/frontend',
-      script: 'npm',
-      args: 'start',
-      env: { NODE_ENV: 'production', PORT: 3000 },
-      autorestart: true,
-      max_memory_restart: '300M',
-    },
-    {
-      name: 'meeting-agent',
-      cwd: '/var/www/meeting-management/python-agent',
-      script: 'venv/bin/uvicorn',
-      args: 'main:app --host 0.0.0.0 --port 8000',
-      interpreter: 'none',
-      autorestart: true,
-      max_memory_restart: '300M',
-    },
-  ],
-};
+---
+
+## 7️⃣ Setup NSSM (Windows Service)
+
+### Download & Extract
+```
+Download dari nssm.cc
+Extract ke: C:\nssm
 ```
 
-### Jalankan semua service
+Buka **Command Prompt as Administrator** untuk semua langkah di bawah.
 
-```bash
-cd /var/www/meeting-management
-pm2 start ecosystem.config.js
+### Install Service — Backend
+```cmd
+C:\nssm\win64\nssm.exe install meeting-backend
+```
+Isi di jendela GUI NSSM:
+```
+Path              : C:\Program Files\nodejs\node.exe
+Startup directory : C:\Users\<username>\Downloads\meeting_management\backend
+Arguments         : app.js
+```
+Tab **I/O** (opsional, untuk debugging):
+```
+Output (stdout) : C:\logs\meeting-backend-out.log
+Error (stderr)  : C:\logs\meeting-backend-err.log
+```
+Klik **Install service**.
+
+### Install Service — Frontend
+```cmd
+C:\nssm\win64\nssm.exe install meeting-frontend
+```
+```
+Path              : C:\Program Files\nodejs\npm.cmd
+Startup directory : C:\Users\<username>\Downloads\meeting_management\frontend
+Arguments         : start
 ```
 
-### Cek status
-
-```bash
-pm2 status
-pm2 logs   # cek log realtime semua service
+### Install Service — Python Agent
+```cmd
+C:\nssm\win64\nssm.exe install meeting-agent
+```
+```
+Path              : C:\Users\<username>\Downloads\ai_meeting_management\venv\Scripts\python.exe
+Startup directory : C:\Users\<username>\Downloads\ai_meeting_management
+Arguments         : app/main.py
 ```
 
-### Setup auto start saat server reboot
+### Aktifkan Auto-Start & Jalankan
 
-```bash
-pm2 startup
-pm2 save
+```
+Buka services.msc
+Untuk masing-masing service (meeting-backend, meeting-frontend, meeting-agent):
+→ Klik kanan → Properties → Startup type: Automatic → OK
+→ Klik kanan → Start
 ```
 
-## Setup Nginx Reverse Proxy
+> ⚠️ Sebelum start, pastikan tidak ada proses manual (`node.exe`, `python.exe`) yang masih jalan dari testing sebelumnya (cek Task Manager) — bisa bentrok port.
 
-Buat file konfigurasi Nginx:
+---
 
-```bash
-sudo nano /etc/nginx/sites-available/meeting-app
+## 8️⃣ Setup IIS Reverse Proxy
+
+### Install IIS
+```
+Control Panel → Programs → Turn Windows features on or off
+→ Centang "Internet Information Services"
+→ OK, tunggu instalasi
 ```
 
-Isi file Nginx:
-
-```nginx
-server {
-    listen 80;
-    server_name meeting.namadomain.com;
-
-    # Frontend
-    location / {
-        proxy_pass http://localhost:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_cache_bypass $http_upgrade;
-    }
-
-    # Backend API
-    location /api {
-        proxy_pass http://localhost:5000;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
+### Install Modul Tambahan
+```
+Download & install:
+- URL Rewrite Module      (iis.net/downloads/microsoft/url-rewrite)
+- Application Request Routing (iis.net/downloads/microsoft/application-request-routing)
 ```
 
-Aktifkan konfigurasi:
-
-```bash
-sudo ln -s /etc/nginx/sites-available/meeting-app /etc/nginx/sites-enabled/
-sudo nginx -t   # test config tidak ada error
-sudo systemctl restart nginx
+### Enable Proxy di ARR
+```
+IIS Manager → klik nama SERVER (panel kiri, paling atas)
+→ Double click "Application Request Routing Cache"
+→ Panel kanan: "Server Proxy Settings..."
+→ Centang "Enable proxy" → Apply
 ```
 
-## Setup SSL (Kalau Ada Domain)
+### Buat Website Baru
 
-```bash
-sudo apt install -y certbot python3-certbot-nginx
-sudo certbot --nginx -d meeting.namadomain.com
+```
+⚠️ Jangan taruh physical path di folder Downloads/Desktop — 
+   IIS_IUSRS tidak punya izin akses, akan error 500.19
+
+Buat folder dummy: C:\inetpub\meeting-app
+
+IIS Manager → klik kanan "Sites" → "Add Website"
+Site name       : meeting-app
+Physical path   : C:\inetpub\meeting-app
+Binding         : Type: http, Port: 80
 ```
 
-## Testing & Monitoring
+> Kalau "Default Web Site" bawaan IIS masih pakai port 80, klik kanan → Stop dulu untuk menghindari konflik.
 
-```bash
-# Cek semua service jalan
-pm2 status
+### Setup URL Rewrite Rules
 
-# Cek log kalau ada error
-pm2 logs meeting-backend
-pm2 logs meeting-frontend
-pm2 logs meeting-agent
+Klik site **meeting-app** → buka **URL Rewrite** di panel tengah.
 
-# Cek resource usage
-pm2 monit
+**Rule 1 — API ke Backend:**
+```
+Add Rule(s) → Reverse Proxy → Server name: localhost:5000
 
-# Test akses dari browser
-curl http://localhost:3000
-curl http://localhost:5000/api/health
-curl http://localhost:8000/health
+Edit rule tersebut:
+Pattern (regex) : ^api/(.*)
+Rewrite URL     : http://localhost:5000/api/{R:1}
 ```
 
-## Workflow Update Kode ke Depannya
+**Rule 2 — Sisanya ke Frontend:**
+```
+Add Rule(s) → Reverse Proxy → Server name: localhost:3000
 
-Setiap ada perubahan kode:
-
-```bash
-cd /var/www/meeting-management
-git pull origin main
+Edit rule tersebut:
+Pattern (regex) : (.*)
+Rewrite URL     : http://localhost:3000/{R:1}
 ```
 
-### Kalau ada perubahan backend
+> ⚠️ **Urutan rule penting!** Rule `/api/*` harus di atas rule catch-all `(.*)`. Cek & atur pakai klik kanan rule → **Move Up/Move Down**.
 
-```bash
-cd backend && npm install
-pm2 restart meeting-backend
+### Buka Port 80 di Firewall
+```
+Windows Defender Firewall with Advanced Security
+→ Inbound Rules → New Rule → Port → TCP → 80 → Allow
+→ Name: "IIS HTTP" → Finish
 ```
 
-### Kalau ada perubahan frontend
+---
 
-```bash
-cd ../frontend && npm install && npm run build
-pm2 restart meeting-frontend
+## 9️⃣ Update Environment Variables Sesuai IP VM
+
+Setelah IIS aktif, update `.env` agar konsisten pakai IP VM tanpa port:
+
+**Frontend `.env.local`:**
+```env
+NEXT_PUBLIC_API_URL=http://<ip-vm>/api
 ```
 
-### Kalau ada perubahan python agent
-
-```bash
-cd ../python-agent && source venv/bin/activate && pip install -r requirements.txt
-pm2 restart meeting-agent
+**Backend `.env`:**
+```env
+FRONTEND_URL=http://<ip-vm>
 ```
 
-## Checklist Lengkap
+Setelah ubah `.env`:
+```cmd
+:: Build ulang frontend WAJIB setelah ubah env
+cd meeting_management\frontend
+npm run build
+```
 
-- [ ] Server updated, firewall aktif
-- [ ] Node.js, Python, PostgreSQL, Nginx, PM2 terinstall
-- [ ] Database dibuat & migration dijalankan
-- [ ] Backend .env terisi, test manual jalan
-- [ ] Frontend .env.local terisi, build berhasil
-- [ ] Python agent .env terisi, test manual jalan
-- [ ] ecosystem.config.js dibuat
-- [ ] PM2 menjalankan ketiga service + auto-start saat reboot
-- [ ] Nginx reverse proxy terkonfigurasi
-- [ ] SSL terpasang (kalau ada domain)
-- [ ] Testing akses dari browser berhasil
+Restart kedua service via `services.msc` (meeting-backend & meeting-frontend).
+
+---
+
+## 🔟 Testing End-to-End
+
+```
+Dari browser VM maupun laptop lain di jaringan yang sama:
+http://<ip-vm>
+
+Checklist:
+□ Halaman login muncul tanpa perlu sebut port
+□ Login berhasil
+□ Dashboard tampil dengan data meeting
+□ CRUD meeting berfungsi
+□ AI Agent (floating chat) merespon
+□ Pindah-pindah halaman lancar
+```
+
+> 💡 Kalau AI Agent sempat error "not valid JSON" / muncul DOCTYPE HTML tepat setelah restart service — ini biasanya race condition sesaat karena service belum fully ready. Tunggu beberapa detik dan coba lagi; kalau berlanjut terus-menerus baru perlu digali lebih dalam.
+
+---
+
+## 🔄 Cara Deploy Ulang (Update Kode / Environment Variables)
+
+### Kalau Ada Perubahan Kode Backend
+
+```cmd
+cd C:\Users\<username>\Downloads\meeting_management
+git pull
+
+cd backend
+npm install          :: hanya jika ada package baru ditambahkan
+```
+
+Restart service:
+```
+services.msc → meeting-backend → Restart
+```
+
+> Backend membaca file `.js` langsung tiap dijalankan — tidak perlu build.
+
+---
+
+### Kalau Ada Perubahan Kode Frontend
+
+```cmd
+cd C:\Users\<username>\Downloads\meeting_management
+git pull
+
+cd frontend
+npm install           :: hanya jika ada package baru
+npm run build          :: ⚠️ WAJIB, jangan sampai lupa
+```
+
+Restart service:
+```
+services.msc → meeting-frontend → Restart
+```
+
+> ⚠️ **Ini yang paling sering kelupaan.** Next.js production meng-compile kode saat build — restart service tanpa build ulang akan tetap menjalankan versi build yang lama, meskipun kode sumber sudah ter-update dari `git pull`.
+
+---
+
+### Kalau Ada Perubahan Kode Python AI Agent
+
+```cmd
+cd C:\Users\<username>\Downloads\ai_meeting_management
+git pull
+
+venv\Scripts\activate
+pip install -r requirements.txt   :: hanya jika ada library baru
+```
+
+Restart service:
+```
+services.msc → meeting-agent → Restart
+```
+
+---
+
+### Kalau Ada Perubahan Environment Variables (.env)
+
+```cmd
+:: Edit file .env yang relevan
+notepad backend\.env
+notepad frontend\.env.local
+notepad ai_meeting_management\.env
+```
+
+**Backend / Python Agent:** cukup restart service — env langsung terbaca ulang.
+
+**Frontend:** environment variable `NEXT_PUBLIC_*` di-*inline* ke dalam bundle saat build. Jadi:
+```cmd
+cd frontend
+npm run build   :: WAJIB build ulang setelah ubah .env.local
+```
+Baru restart service.
+
+---
+
+### Ringkasan Cepat
+
+| Yang Berubah | `npm/pip install`? | Build Ulang? | Restart Service |
+|---|---|---|---|
+| Backend (kode) | Jika ada package baru | ❌ Tidak perlu | ✅ |
+| Backend (`.env`) | ❌ | ❌ | ✅ |
+| Frontend (kode) | Jika ada package baru | ✅ Selalu wajib | ✅ |
+| Frontend (`.env.local`) | ❌ | ✅ Selalu wajib | ✅ |
+| Python Agent (kode) | Jika ada library baru | ❌ Tidak perlu | ✅ |
+| Python Agent (`.env`) | ❌ | ❌ | ✅ |
+
+---
+
+## 🛠️ Troubleshooting Umum
+
+### Service gagal start — "Service did not return an error"
+```
+1. Cek Task Manager, pastikan tidak ada proses manual (node.exe/
+   python.exe) yang masih jalan dan bentrok port
+2. Buka NSSM edit (nssm edit <nama-service>), cek ulang Path dan 
+   Startup directory pakai path lengkap (bukan relatif)
+3. Aktifkan logging di tab I/O NSSM, cek isi file log error-nya
+```
+
+### Service Python Agent — "error code 3"
+```
+Biasanya path python.exe di dalam venv salah/tidak ditemukan.
+Cek file benar-benar ada di: <folder-agent>\venv\Scripts\python.exe
+```
+
+### IIS — HTTP Error 500.19 "Cannot read configuration file"
+```
+Physical path website ada di folder user (Downloads/Desktop) yang 
+tidak bisa diakses IIS_IUSRS. Pindahkan physical path ke 
+C:\inetpub\<nama-app> atau berikan permission Read & execute ke 
+IIS_IUSRS pada folder tersebut.
+```
+
+### Perubahan kode frontend tidak muncul di browser
+```
+Lupa jalankan `npm run build` setelah git pull atau ubah .env.local. 
+Build ulang, lalu restart service meeting-frontend.
+```
+
+### AI Agent tidak merespon / "not valid JSON"
+```
+1. Cek service meeting-agent statusnya Running di services.msc
+2. Cek langsung http://localhost:8000/health di browser VM
+3. Kalau baru saja restart beberapa service berurutan, tunggu 
+   beberapa detik — bisa jadi race condition sesaat sampai semua 
+   service settle
+```
+
+---
+
+## 📌 Catatan Tambahan
+
+- Python AI Agent (port 8000) **tidak perlu** rule IIS — dipanggil langsung oleh backend secara internal via `AGENT_URL=http://localhost:8000` di server yang sama.
+- Simpan kredensial (`JWT_SECRET`, password PostgreSQL, API key) dengan aman, jangan commit `.env` ke Git.
+- Selama masih tahap testing intensif dengan perubahan kode sering, disarankan tetap jalankan service secara manual di terminal (bukan via NSSM) untuk mempermudah debugging — baru pindah ke NSSM + IIS ketika kode sudah dirasa stabil untuk dipakai/didemokan ke orang lain.
