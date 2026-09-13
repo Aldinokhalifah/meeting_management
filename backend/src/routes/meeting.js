@@ -19,5 +19,6 @@ router.delete('/:id/participants/:userId', meetingController.removeParticipant);
 
 // router.post('/:id/whatsapp/invitation', waController.sendInvitation);
 // router.post('/:id/whatsapp/summary', waController.sendMeetingSummary);
+router.post('/:id/whatsapp/cancellation', waController.sendMeetingCancellation);
 
 module.exports = router;

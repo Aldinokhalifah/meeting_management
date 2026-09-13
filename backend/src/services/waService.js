@@ -1,5 +1,5 @@
 const { sendWhatsAppText } = require('../config/wa')
-const { invitationMessage, meetingSummaryMessage } = require('../utils/waTemplates')
+const { invitationMessage, meetingSummaryMessage, meetingCancellationMessage } = require('../utils/waTemplates')
 const { normalizeIndonesiaWhatsapp } = require('../utils/normalizePhone')
 const tiptapToText = require('../utils/tiptapToText')
 const waRepo = require('../repositories/waRepository')
@@ -68,6 +68,39 @@ const sendMeetingSummaryWhatsApps = async (meeting_id) => {
     const results = await Promise.all(tasks)
     const ok = results.filter((r) => r.status === 'fulfilled').length
     return results
+}
+
+const sendMeetingCancellationWhatsApps = async (meeting_id, snapshot = {}) => {
+    const meeting = snapshot.meeting || (await meetingRepo.getMeetingById(meeting_id))
+    if (!meeting) {
+        const e = new Error('Meeting tidak ditemukan')
+        e.status = 404
+        throw e
+    }
+
+    const participants = snapshot.participants || await waRepo.getParticipantsWithWhatsappByMeetingId(meeting_id)
+    const host = await authRepo.findUserById(meeting.created_by)
+    const tasks = participants.map(async (participant) => {
+        const to = normalizeIndonesiaWhatsapp(participant.whatsapp_phone)
+        if (!to) return { status: 'skipped', user_id: participant.id, reason: 'invalid_phone' }
+
+        try {
+            const message = meetingCancellationMessage({
+                recipientName: participant.name,
+                meetingTitle: meeting.title,
+                scheduledAt: meeting.scheduled_at,
+                location: meeting.location,
+                hostName: host?.name,
+            })
+            const result = await sendWhatsAppText({ to, message })
+            return { status: 'fulfilled', user_id: participant.id, result }
+        } catch (err) {
+            console.error(`✗ WA pembatalan gagal → ${participant.name}:`, err.message)
+            return { status: 'rejected', user_id: participant.id, error: err.message }
+        }
+    })
+
+    return Promise.all(tasks)
 }
 
 const assertHost = async (meeting_id, user_id) => {
@@ -141,9 +174,17 @@ const sendMeetingSummaryWhatsAppByMeeting = async (meeting_id, host_user_id) => 
     return { meeting_id, results }
 }
 
+const sendMeetingCancellationWhatsAppByMeeting = async (meeting_id, host_user_id) => {
+    await assertHost(meeting_id, host_user_id)
+    const results = await sendMeetingCancellationWhatsApps(meeting_id)
+    return { meeting_id, results }
+}
+
 module.exports = {
     sendInvitationWhatsApp,
     sendMeetingSummaryWhatsApps,
+    sendMeetingCancellationWhatsApps,
     sendInvitationWhatsAppByMeeting,
     sendMeetingSummaryWhatsAppByMeeting,
+    sendMeetingCancellationWhatsAppByMeeting,
 }

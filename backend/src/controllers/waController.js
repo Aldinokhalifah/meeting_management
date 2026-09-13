@@ -21,4 +21,13 @@ const sendMeetingSummary = async (req, res, next) => {
     }
 }
 
-module.exports = { sendInvitation, sendMeetingSummary }
+const sendMeetingCancellation = async (req, res, next) => {
+    try {
+        const data = await waService.sendMeetingCancellationWhatsAppByMeeting(req.params.id, req.user.id)
+        res.status(200).json({ message: 'Permintaan kirim pembatalan meeting lewat WA diproses', data })
+    } catch (err) {
+        next(err)
+    }
+}
+
+module.exports = { sendInvitation, sendMeetingSummary, sendMeetingCancellation }

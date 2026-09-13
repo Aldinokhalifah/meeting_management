@@ -3,6 +3,7 @@ const authRepo = require('../repositories/authRepository');
 const aiService = require('./aiService');
 const emailService = require('./emailService')
 const waService = require('./waService');
+const waRepo = require('../repositories/waRepository')
 const ROOMS = require('../utils/room');
 
 const createMeeting = async ({ title, description, scheduled_at, end_time, location, participant_ids = [], previous_meeting_id = null }, created_by) => {
@@ -94,6 +95,12 @@ const updateMeeting = async (meeting_id, user_id, body) => {
 
     const updated =  await meetingRepo.updateMeeting(meeting_id, body);
 
+    if (meeting.status !== 'cancelled' && body.status === 'cancelled') {
+        waService.sendMeetingCancellationWhatsApps(meeting_id).catch((err) => {
+            console.error(`[WA Error] Cancellation for meeting ${meeting_id}:`, err.message)
+        })
+    }
+
      // Auto-generate AI summary saat meeting diakhiri
     if (body.status === 'done') {
         // Generate AI summary di background
@@ -125,6 +132,13 @@ const deleteMeeting = async (meeting_id, user_id) => {
 
     const role = await meetingRepo.getUserRole(meeting_id, user_id);
     if (role !== 'host') throw new Error('ONLY_HOST_CAN_DELETE');
+
+    if (meeting.status !== 'cancelled') {
+        const participants = await waRepo.getParticipantsWithWhatsappByMeetingId(meeting_id)
+        await waService.sendMeetingCancellationWhatsApps(meeting_id, { meeting, participants }).catch((err) => {
+            console.error(`[WA Error] Cancellation for meeting ${meeting_id}:`, err.message)
+        })
+    }
 
     await meetingRepo.deleteMeeting(meeting_id);
     return { id: meeting_id };

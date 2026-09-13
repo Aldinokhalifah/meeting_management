@@ -77,4 +77,18 @@ const meetingSummaryMessage = ({
     return lines.join('\n')
 }
 
-module.exports = { invitationMessage, meetingSummaryMessage }
+const meetingCancellationMessage = ({ recipientName, meetingTitle, scheduledAt, location, hostName }) => {
+    const lines = [
+        `Halo ${recipientName},`,
+        '',
+        `Pertemuan *${meetingTitle}* dibatalkan.`,
+        `📅 ${formatDate(scheduledAt)}`,
+        `⏰ ${formatTime(scheduledAt)}`,
+    ]
+    if (location) lines.push(`🏢 ${location}`)
+    if (hostName) lines.push(`👤 Host: ${hostName}`)
+    lines.push('', 'Mohon abaikan jadwal meeting tersebut.', '', '— Meeting Management')
+    return lines.join('\n')
+}
+
+module.exports = { invitationMessage, meetingSummaryMessage, meetingCancellationMessage }
