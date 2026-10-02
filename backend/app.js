@@ -3,16 +3,17 @@ const express = require('express')
 const cors = require('cors')
 const helmet = require('helmet')
 const errorHandler = require('./src/middleware/errorHandle')
-const {testConnection} = require('./src/config/db')
+const { testConnection } = require('./src/config/db')
 const authRoute = require('./src/routes/auth')
 const meetingRoute = require('./src/routes/meeting');
+const attachmentRoute = require('./src/routes/attachment');
 const noteRoute = require('./src/routes/note');
 const actionItemRoute = require('./src/routes/actionItem');
 const continuationRoute = require('./src/routes/continuation');
 const userRoute = require('./src/routes/user');
 const aiRoute = require('./src/routes/ai');
 const agentRoute = require('./src/routes/agent')
-const {globalLimiter} = require('./src/middleware/rateLimiter')
+const { globalLimiter } = require('./src/middleware/rateLimiter')
 
 const app = express()
 
@@ -36,7 +37,7 @@ app.set('trust proxy', 1)
 app.use(express.json())
 app.use(helmet())
 app.use(cors(corsOptions))
-app.use(express.urlencoded({ extended: true })); 
+app.use(express.urlencoded({ extended: true }));
 app.use(globalLimiter)
 
 // Routes
@@ -45,6 +46,7 @@ app.use('/api/meetings', meetingRoute);
 app.use('/api/meetings/:id/notes', noteRoute);
 app.use('/api/meetings/:id/action-items', actionItemRoute);
 app.use('/api/meetings/:id/continue', continuationRoute);
+app.use('/api/meetings/:id/attachments', attachmentRoute);
 app.use('/api/meetings/:id/ai', aiRoute);
 app.use('/api/users', userRoute);
 app.use('/api/agent', agentRoute);
@@ -58,11 +60,11 @@ app.get('/test-connection', async (req, res) => {
     const ok = await testConnection();
     if (ok) {
         res.status(200).json({
-        message: "Koneksi database berhasil",
+            message: "Koneksi database berhasil",
         });
     } else {
         res.status(500).json({
-        message: "Koneksi database gagal",
+            message: "Koneksi database gagal",
         });
     }
 });
@@ -74,7 +76,7 @@ const PORT = process.env.PORT || 3001
 app.listen(PORT, async () => {
     console.log(`Server running on port ${PORT}`)
     const ok = await testConnection();
-    if(ok) {
+    if (ok) {
         console.log("PostgreSQL: connected");
     } else {
         console.log("PostgreSQL: GAGAL terhubung — cek .env dan service PostgreSQL");

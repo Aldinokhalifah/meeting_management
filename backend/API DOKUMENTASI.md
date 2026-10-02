@@ -611,6 +611,155 @@ Hapus action item. Hanya host & secretary yang bisa akses.
 
 ---
 
+## 6b. Attachments (Dokumen Pendukung)
+
+File tidak dikirim lewat backend: client meminta izin (presign), mengunggah **langsung ke MinIO**, lalu mengonfirmasi ke backend.
+
+**Aturan:**
+- Upload/hapus: host & secretary (peran per meeting). Lihat/download: semua peserta meeting.
+- Upload hanya boleh saat status meeting `ongoing` atau `done`. Lihat, download, dan hapus tetap boleh di semua status.
+- Tipe: JPG, JPEG, PNG, WEBP, PDF, DOC, DOCX, XLS, XLSX. Tipe ditentukan dari ekstensi nama file (`file_type` dari client diabaikan).
+- Maksimal 10MB per file dan 5 file per meeting (`MAX_FILE_SIZE`, `MAX_ATTACHMENTS_PER_MEETING`).
+
+**Alur upload:**
+1. `POST /meetings/:id/attachments/presign` → dapat `upload_url` dan `fields`.
+2. `POST` ke `upload_url` dengan `multipart/form-data`: semua `fields` di-append **lebih dulu**, field `file` **terakhir**. Jangan kirim header `Authorization`. Sukses = status `204`.
+3. `POST /meetings/:id/attachments/:attId/confirm` → backend memverifikasi ukuran, tipe, dan isi file.
+
+Record yang tidak pernah dikonfirmasi dibersihkan otomatis saat ada presign berikutnya di meeting yang sama (lebih dari `PENDING_ATTACHMENT_TTL_MINUTES`).
+
+---
+
+### POST `/meetings/:id/attachments/presign`
+Minta izin upload. Hanya host & secretary.
+
+**Body:**
+```json
+{ "file_name": "Notulen Rapat.pdf", "file_size": 204800 }
+```
+
+**Response `201`:**
+```json
+{
+  "message": "URL upload berhasil dibuat",
+  "data": {
+    "attachment_id": "uuid",
+    "upload_url": "http://<host-minio>:9000/meeting-attachments",
+    "fields": { "key": "...", "Content-Type": "application/pdf", "policy": "...", "x-amz-signature": "..." },
+    "expires_in": 300
+  }
+}
+```
+
+**Errors:**
+| Code | Message |
+|------|---------|
+| 400 | ID meeting tidak valid |
+| 400 | Nama file tidak valid |
+| 400 | Ukuran file tidak valid |
+| 400 | Ukuran file melebihi batas maksimal |
+| 400 | Tipe file tidak diizinkan, gunakan JPG, PNG, WEBP, PDF, DOC, DOCX, XLS, atau XLSX |
+| 400 | Dokumen hanya dapat diunggah saat meeting sedang berlangsung atau sudah selesai |
+| 403 | Kamu tidak memiliki akses ke meeting ini |
+| 403 | Hanya host dan secretary yang dapat mengunggah dokumen |
+| 404 | Meeting tidak ditemukan |
+| 409 | Jumlah dokumen pendukung sudah mencapai batas maksimal |
+
+---
+
+### POST `/meetings/:id/attachments/:attId/confirm`
+Konfirmasi upload selesai. Hanya pengunggah yang sama (host/secretary). Aman dipanggil ulang.
+Jika verifikasi gagal, record dan file dihapus.
+
+**Response `200`:**
+```json
+{
+  "message": "Dokumen berhasil diunggah",
+  "data": {
+    "id": "uuid",
+    "meeting_id": "uuid",
+    "file_name": "Notulen Rapat.pdf",
+    "file_size": 204800,
+    "file_type": "application/pdf",
+    "status": "uploaded",
+    "uploaded_by": "uuid",
+    "created_at": "..."
+  }
+}
+```
+
+**Errors:**
+| Code | Message |
+|------|---------|
+| 400 | Verifikasi file gagal, pastikan file valid lalu unggah ulang |
+| 400 | Dokumen hanya dapat diunggah saat meeting sedang berlangsung atau sudah selesai |
+| 403 | Hanya host dan secretary yang dapat mengunggah dokumen |
+| 403 | Hanya pengunggah yang dapat mengonfirmasi upload |
+| 404 | Dokumen tidak ditemukan |
+
+---
+
+### GET `/meetings/:id/attachments`
+List dokumen yang sudah terunggah (tanpa URL). Semua peserta meeting.
+
+**Response `200`:**
+```json
+{
+  "message": "Berhasil mengambil dokumen pendukung",
+  "data": [
+    {
+      "id": "uuid",
+      "meeting_id": "uuid",
+      "file_name": "Notulen Rapat.pdf",
+      "file_size": 204800,
+      "file_type": "application/pdf",
+      "uploaded_by": "uuid",
+      "uploaded_by_name": "Aldino",
+      "created_at": "..."
+    }
+  ]
+}
+```
+
+---
+
+### GET `/meetings/:id/attachments/:attId/url?mode=preview|download`
+URL sementara untuk melihat/mengunduh. Semua peserta meeting. Default `download`.
+`preview` (inline) hanya berlaku untuk gambar dan PDF; tipe lain otomatis menjadi `download`, lihat `mode` di response.
+
+**Response `200`:**
+```json
+{
+  "message": "Berhasil membuat URL dokumen",
+  "data": { "url": "http://<host-minio>:9000/...", "mode": "preview", "expires_in": 600 }
+}
+```
+
+**Errors:**
+| Code | Message |
+|------|---------|
+| 400 | Mode tidak valid, gunakan preview atau download |
+| 404 | Dokumen tidak ditemukan |
+| 409 | Dokumen belum selesai diunggah |
+
+---
+
+### DELETE `/meetings/:id/attachments/:attId`
+Hapus dokumen. Hanya host & secretary, di semua status meeting.
+
+**Response `200`:**
+```json
+{ "message": "Dokumen berhasil dihapus" }
+```
+
+**Errors:**
+| Code | Message |
+|------|---------|
+| 403 | Hanya host dan secretary yang dapat menghapus dokumen |
+| 404 | Dokumen tidak ditemukan |
+
+---
+
 ## 7. Meeting Continuation
 
 ### POST `/meetings/:id/continue`
