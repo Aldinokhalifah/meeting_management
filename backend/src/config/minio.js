@@ -6,7 +6,7 @@ const toBool = (value) => String(value).toLowerCase() === 'true'
 const accessKey = process.env.MINIO_ACCESS_KEY
 const secretKey = process.env.MINIO_SECRET_KEY
 const region = process.env.MINIO_REGION || 'us-east-1'
-const bucket = process.env.MINIO_BUCKET || 'meeting-attachments'
+const bucket = process.env.MINIO_BUCKET
 
 const buildClient = ({ endPoint, port, useSSL }) =>
     new Minio.Client({
