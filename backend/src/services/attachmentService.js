@@ -6,8 +6,8 @@ const { isValidUUID } = require('../utils/validateUuid');
 const {
     ALLOWED_FILES, sanitizeFileName, getExtension, buildContentDisposition,
 } = require('../utils/attachmentFiles');
+const parseFileSize = require('../utils/parseFileSize')
 
-const MAX_FILE_SIZE = Number(process.env.MAX_FILE_SIZE) || 10 * 1024 * 1024;
 const PRESIGN_UPLOAD_EXPIRY = Number(process.env.PRESIGN_UPLOAD_EXPIRY) || 300;
 const PRESIGN_VIEW_EXPIRY = Number(process.env.PRESIGN_VIEW_EXPIRY) || 600;
 const MAX_ATTACHMENTS_PER_MEETING = Number(process.env.MAX_ATTACHMENTS_PER_MEETING) || 5;
@@ -59,15 +59,6 @@ const removeObjectsQuietly = async (object_keys) => {
 const discardAttachment = async (attachment) => {
     await attachmentRepo.deleteAttachment(attachment.id);
     await removeObjectQuietly(attachment.object_key);
-};
-
-const parseFileSize = (file_size) => {
-    const size = Number(file_size);
-    if (file_size === undefined || file_size === null || file_size === '' || !Number.isInteger(size) || size <= 0) {
-        throw new Error('INVALID_FILE_SIZE');
-    }
-    if (size > MAX_FILE_SIZE) throw new Error('FILE_TOO_LARGE');
-    return size;
 };
 
 const requestUpload = async ({ meeting_id, user_id, file_name, file_size }) => {
