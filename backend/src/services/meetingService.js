@@ -2,6 +2,7 @@ const meetingRepo = require('../repositories/meetingRepository');
 const authRepo = require('../repositories/authRepository');
 const aiService = require('./aiService');
 const emailService = require('./emailService')
+const attachmentService = require('./attachmentService');
 const waService = require('./waService');
 const waRepo = require('../repositories/waRepository')
 const ROOMS = require('../utils/room');
@@ -140,7 +141,16 @@ const deleteMeeting = async (meeting_id, user_id) => {
         })
     }
 
+        const objectKeys = await attachmentService.getMeetingObjectKeys(meeting_id).catch((err) => {
+        console.error(`[Attachment Error] Gagal membaca dokumen meeting ${meeting_id}:`, err.message);
+        return [];
+    });
+
     await meetingRepo.deleteMeeting(meeting_id);
+
+    // Hapus objek di belakang layar, response tidak menunggu MinIO
+    if (objectKeys.length > 0) attachmentService.removeObjectsQuietly(objectKeys);
+
     return { id: meeting_id };
 };
 
