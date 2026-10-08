@@ -102,8 +102,12 @@ export default function MeetingFormModal({ isOpen, onClose, meeting = null }) {
                     onChange={handleChange}
                     placeholder="Sprint Planning Q2..."
                     required
+                    maxLength={50}
                     className={inputClass}
                 />
+                {form.title.length >= 50 && (
+                    <p className="text-xs text-amber-600">Judul meeting sudah mencapai batas maksimal 50 karakter.</p>
+                )}
                 </InputField>
 
                 <InputField label="Deskripsi">
@@ -113,8 +117,12 @@ export default function MeetingFormModal({ isOpen, onClose, meeting = null }) {
                     onChange={handleChange}
                     placeholder="Agenda meeting ini..."
                     rows={3}
+                    maxLength={200}
                     className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition resize-none"
                 />
+                {form.description.length >= 200 && (
+                    <p className="text-xs text-amber-600">Deskripsi sudah mencapai batas maksimal 200 karakter.</p>
+                )}
                 </InputField>
 
                 <div className="grid grid-cols-2 gap-3">

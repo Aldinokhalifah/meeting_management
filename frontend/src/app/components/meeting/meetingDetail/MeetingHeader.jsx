@@ -96,8 +96,13 @@ export default function MeetingHeader({ meeting, myRole, onEdit, onContinue, onD
             </div>
 
             {/* Title + Badge */}
-            <div className="flex items-start gap-3">
-                <h1 className="text-xl font-semibold text-gray-900 flex-1">{meeting?.title}</h1>
+            <div className="flex min-w-0 items-start gap-3">
+                <div className="min-w-0 flex-1">
+                    <h1 className="text-xl font-semibold text-gray-900 ">{meeting?.title}</h1>
+                    <p className="max-w-full truncate text-sm text-gray-600" title={meeting?.description}>
+                        {meeting?.description}
+                    </p>
+                </div>
                 <span className={`text-xs font-medium px-2.5 py-1 rounded-full border shrink-0 ${status.className}`}>
                 {status.label}
                 </span>

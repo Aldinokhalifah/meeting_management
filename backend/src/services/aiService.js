@@ -5,7 +5,7 @@ const meetingRepo = require('../repositories/meetingRepository')
 const actionItemRepo = require('../repositories/actionItemRepository')
 const tiptapToText = require('../utils/tiptapToText')
 const Prompt = require('../utils/prompt')
-const { chatCompletionsWithFallback } = require('../utils/openrouterFallback')
+const chatCompletionsWithFallback = require('../utils/openrouterFallback')
 
 const generateMeetingSummary = async (meeting_id, user_id) => {
     // 1. Cek meeting ada

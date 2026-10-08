@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { useMeeting, useDeleteMeeting } from '@/hooks/useMeetings'
 import MeetingHeader from '@/app/components/meeting/meetingDetail/MeetingHeader'
 import NotesSection from '@/app/components/meeting/meetingDetail/NoteSection'
+import AttachmentSection from '@/app/components/meeting/meetingDetail/AttachmentSection'
 import AiSummarySection from '@/app/components/meeting/meetingDetail/AiSummarySection'
 import ActionItemsSection from '@/app/components/meeting/meetingDetail/ActionItemsSection'
 import ParticipantsSection from '@/app/components/meeting/meetingDetail/ParticipantsSection'
@@ -102,6 +103,9 @@ export default function MeetingDetailPage() {
 
                 {/* Notes Section - Full Width Below */}
                 <NotesSection meetingId={id} canEdit={canEdit} />
+
+                {/* Dokumen Pendukung */}
+                <AttachmentSection meetingId={id} canEdit={canEdit} meetingStatus={meeting?.status} />
 
                 {/* AI Summary Section */}
                 <AiSummarySection meeting={meeting} />

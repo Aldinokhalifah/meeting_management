@@ -1,10 +1,10 @@
 const openrouter = require('../config/openrouter');
 
 const FALLBACK_MODELS = [
-    process.env.OPENROUTER_MODEL || 'nvidia/nemotron-3-super-120b-a12b:free',
+    process.env.OPENROUTER_MODEL || 'nvidia/nemotron-3.5-lightning:free',
     'nvidia/nemotron-3-ultra-550b-a55b:free',
+    'nvidia/nemotron-3.5-lightning:free',
     'meta-llama/llama-3.3-70b-instruct:free',
-    'nvidia/nemotron-3-super-120b-a12b:free',
 ];
 
 // Status code error di tingkat API Key (langsung ganti key, skip sisa model)
