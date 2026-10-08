@@ -29,6 +29,7 @@ Aplikasi manajemen meeting internal berbasis web yang dibangun untuk PT. Probesc
 - **Peserta Meeting** — Undang peserta, atur role (Host, Secretary, Participant)
 - **Notulen** — Rich text editor (Tiptap) untuk mencatat notulen meeting
 - **Action Items** — Buat dan kelola tugas dari hasil meeting dengan assignee dan deadline
+- **Dokumen Pendukung (Attachments)** — Unggah, lihat, unduh, dan hapus file pendukung meeting melalui MinIO
 - **Meeting Continuation** — Sambungkan meeting ke meeting berikutnya dengan carry-over action items
 - **Access Control** — Peserta yang tidak diundang tidak bisa melihat detail meeting
 
@@ -418,6 +419,22 @@ Authorization: Bearer <token>
 | GET | `/meetings/:id/action-items` | List action items |
 | PATCH | `/meetings/:id/action-items/:itemId` | Update action item |
 | DELETE | `/meetings/:id/action-items/:itemId` | Hapus action item |
+
+### Attachment Endpoints
+| Method | Endpoint | Deskripsi |
+|---|---|---|
+| POST | `/meetings/:id/attachments/presign` | Minta URL dan form fields untuk upload langsung ke MinIO |
+| POST | `/meetings/:id/attachments/:attId/confirm` | Konfirmasi dan verifikasi upload |
+| GET | `/meetings/:id/attachments` | Daftar dokumen yang sudah diunggah |
+| GET | `/meetings/:id/attachments/:attId/url?mode=preview\|download` | Minta URL sementara untuk preview atau download |
+| DELETE | `/meetings/:id/attachments/:attId` | Hapus dokumen |
+
+**Ketentuan attachment:**
+- Hanya host dan secretary meeting yang dapat mengunggah atau menghapus dokumen; semua peserta dapat melihat daftar dan mengakses URL dokumen.
+- Upload hanya diizinkan saat status meeting `ongoing` atau `done`.
+- Format yang didukung: JPG, JPEG, PNG, WEBP, PDF, DOC, DOCX, XLS, dan XLSX. Maksimum ukuran file 10 MB dan 5 dokumen per meeting.
+- Alur upload: minta presigned form melalui endpoint `presign`, kirim file langsung ke `upload_url` MinIO sebagai `multipart/form-data` (append semua `fields` terlebih dahulu dan `file` terakhir, tanpa header Authorization), lalu panggil endpoint `confirm`.
+- URL preview/download bersifat sementara. Preview tersedia untuk gambar dan PDF; format lain akan diunduh.
 
 ### Meeting Continuation Endpoints
 | Method | Endpoint | Deskripsi |
