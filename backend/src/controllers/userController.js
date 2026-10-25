@@ -4,7 +4,6 @@ const searchUsers = async (req, res, next) => {
     try {
         const { q } = req.query;
         if (!q) return res.status(400).json({ message: 'Query parameter q wajib diisi' });
-
         const users = await userService.searchUsers(q);
         res.json({ message: 'Berhasil mencari user', data: users });
     } catch (err) {
@@ -14,14 +13,16 @@ const searchUsers = async (req, res, next) => {
 
 const updateProfile = async (req, res, next) => {
     try {
-        const { name, email, avatar_url, whatsapp_phone } = req.body
+        const { name, email, avatar_url, whatsapp_phone, current_password } = req.body
+
         if (!name) return res.status(400).json({ message: 'Nama wajib diisi' })
 
         const updated = await userService.updateProfile(req.user.id, {
-            name,
-            email,
-            avatar_url,
-            whatsapp_phone,
+        name,
+        email,
+        avatar_url,
+        whatsapp_phone,
+        current_password,
         })
         res.status(200).json({ message: 'Profil berhasil diupdate', data: updated })
     } catch (err) {
@@ -29,38 +30,16 @@ const updateProfile = async (req, res, next) => {
     }
 }
 
-const setWhatsappPhone = async (req, res, next) => {
-    try {
-        const { whatsapp_phone } = req.body
-        if (!whatsapp_phone) {
-            return res.status(400).json({ message: 'Nomor WhatsApp wajib diisi' })
-        }
-
-        const updated = await userService.setWhatsappPhone(req.user.id, whatsapp_phone)
-        res.status(201).json({ message: 'Nomor WhatsApp berhasil ditambahkan', data: updated })
-    } catch (err) {
-        next(err)
-    }
-}
-
 const updateWhatsappPhone = async (req, res, next) => {
     try {
-        const { whatsapp_phone } = req.body
-        if (!whatsapp_phone) {
-            return res.status(400).json({ message: 'Nomor WhatsApp wajib diisi' })
-        }
+        const { whatsapp_phone, current_password } = req.body
 
-        const updated = await userService.updateWhatsappPhone(req.user.id, whatsapp_phone)
+        const updated = await userService.updateWhatsappPhone(req.user.id, {
+        whatsapp_phone,
+        current_password,
+        })
+
         res.status(200).json({ message: 'Nomor WhatsApp berhasil diubah', data: updated })
-    } catch (err) {
-        next(err)
-    }
-}
-
-const deleteWhatsappPhone = async (req, res, next) => {
-    try {
-        const updated = await userService.deleteWhatsappPhone(req.user.id)
-        res.status(200).json({ message: 'Nomor WhatsApp berhasil dihapus', data: updated })
     } catch (err) {
         next(err)
     }
@@ -83,7 +62,5 @@ module.exports = {
     searchUsers,
     updateProfile,
     updatePassword,
-    setWhatsappPhone,
     updateWhatsappPhone,
-    deleteWhatsappPhone,
 }

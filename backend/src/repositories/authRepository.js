@@ -6,8 +6,16 @@ const findUserByEmail = async (email) => {
 }
 
 const findUserByWhatsappPhone = async (whatsapp_phone) => {
-    const result = await db.query('SELECT whatsapp_phone FROM users WHERE whatsapp_phone = $1', [whatsapp_phone]);
+    const result = await db.query('SELECT id, whatsapp_phone FROM users WHERE whatsapp_phone = $1', [whatsapp_phone]);
     return result.rows[0]
+}
+
+const findOtherUserByWhatsappPhone = async (whatsapp_phone, userId) => {
+    const result = await db.query(
+        'SELECT id, whatsapp_phone FROM users WHERE whatsapp_phone = $1 AND id <> $2 LIMIT 1',
+        [whatsapp_phone, userId]
+    )
+    return result.rows[0] || null
 }
 
 const findUserById = async (id) => {
@@ -28,4 +36,10 @@ const createUser = async ({ name, email, password_hash, whatsapp_phone = null })
     return result.rows[0]
 }
 
-module.exports = { findUserByEmail, findUserByWhatsappPhone, findUserById, createUser }
+module.exports = {
+    findUserByEmail,
+    findUserByWhatsappPhone,
+    findOtherUserByWhatsappPhone,
+    findUserById,
+    createUser,
+}

@@ -1,5 +1,5 @@
 const { sendWhatsAppText } = require('../config/wa')
-const { invitationMessage, meetingSummaryMessage, meetingCancellationMessage } = require('../utils/waTemplates')
+const { invitationMessage, meetingSummaryMessage, meetingCancellationMessage, accountRegisteredMessage, phoneUpdatedMessage, phoneChangedOldMessage, } = require('../utils/waTemplates')
 const { normalizeIndonesiaWhatsapp } = require('../utils/normalizePhone')
 const tiptapToText = require('../utils/tiptapToText')
 const waRepo = require('../repositories/waRepository')
@@ -180,6 +180,21 @@ const sendMeetingCancellationWhatsAppByMeeting = async (meeting_id, host_user_id
     return { meeting_id, results }
 }
 
+const sendToPhone = async (phone, message) => {
+    const to = normalizeIndonesiaWhatsapp(phone)
+    if (!to) throw new Error('Nomor WhatsApp penerima tidak valid')
+    return sendWhatsAppText({ to, message })
+}
+
+const sendAccountRegisteredWhatsApp = ({ phone, name }) =>
+    sendToPhone(phone, accountRegisteredMessage({ recipientName: name }))
+
+const sendPhoneUpdatedWhatsApp = ({ phone, name }) =>
+    sendToPhone(phone, phoneUpdatedMessage({ recipientName: name }))
+
+const sendPhoneChangedOldWhatsApp = ({ phone, name }) =>
+    sendToPhone(phone, phoneChangedOldMessage({ recipientName: name }))
+
 module.exports = {
     sendInvitationWhatsApp,
     sendMeetingSummaryWhatsApps,
@@ -187,4 +202,7 @@ module.exports = {
     sendInvitationWhatsAppByMeeting,
     sendMeetingSummaryWhatsAppByMeeting,
     sendMeetingCancellationWhatsAppByMeeting,
+    sendAccountRegisteredWhatsApp,
+    sendPhoneUpdatedWhatsApp,
+    sendPhoneChangedOldWhatsApp,
 }

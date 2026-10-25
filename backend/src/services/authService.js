@@ -1,47 +1,44 @@
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const authRepo = require('../repositories/authRepository')
-const { normalizeIndonesiaWhatsapp } = require('../utils/normalizePhone')
+const waService = require('./waService')
+const { requireWhatsappPhone } = require('../utils/whatsappPhone')
+const { fireAndForget } = require('../utils/fireAndForget')
 
 const register = async ({ name, email, password, whatsapp_phone }) => {
     // Validasi format email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(email)) throw new Error('INVALID_EMAIL_FORMAT');
+    if (!emailRegex.test(email)) throw new Error('INVALID_EMAIL_FORMAT')
 
-    const existingEmail = await authRepo.findUserByEmail(email);
-    if(existingEmail) {
-        throw {
-            status: 409,
-            message: 'Email sudah terdaftar'
-        };
-    }
+    const existingEmail = await authRepo.findUserByEmail(email)
+    if (existingEmail) throw new Error('EMAIL_ALREADY_EXISTS')
 
     // Validasi panjang password
-    if (password.length < 6) throw new Error('PASSWORD_TOO_SHORT');
+    if (password.length < 6) throw new Error('PASSWORD_TOO_SHORT')
 
     // Validasi name tidak boleh hanya spasi
-    if (!name.trim()) throw new Error('INVALID_NAME');
+    if (!name.trim()) throw new Error('INVALID_NAME')
 
-    const existingWhatsappPhone = await authRepo.findUserByWhatsappPhone(whatsapp_phone);
-    if(existingWhatsappPhone) {
-        throw new Error('WHATSAPP_PHONE_ALREADY_EXISTS')
-    }
+    // Nomor WA wajib + format seluler Indonesia (hasil: 62xxxx)
+    const normalizedWhatsapp = requireWhatsappPhone(whatsapp_phone)
+    const existingWhatsapp = await authRepo.findUserByWhatsappPhone(normalizedWhatsapp)
+    if (existingWhatsapp) throw new Error('WHATSAPP_PHONE_ALREADY_EXISTS')
 
-    let normalizedWhatsapp = null
-    if (whatsapp_phone !== undefined && whatsapp_phone !== null && String(whatsapp_phone).trim() !== '') {
-        normalizedWhatsapp = normalizeIndonesiaWhatsapp(whatsapp_phone)
-        if (!normalizedWhatsapp) throw new Error('INVALID_WHATSAPP_PHONE')
-    }
+    const password_hash = await bcrypt.hash(password, 10)
 
-    const password_hash = await bcrypt.hash(password, 10);
     const user = await authRepo.createUser({
         name,
         email,
         password_hash,
         whatsapp_phone: normalizedWhatsapp,
-    });
+    })
 
-    return user;
+    // Konfirmasi ke nomor yang didaftarkan; kegagalan tidak boleh menggagalkan registrasi
+    fireAndForget('WA konfirmasi registrasi', () =>
+        waService.sendAccountRegisteredWhatsApp({ phone: normalizedWhatsapp, name: name.trim() })
+    )
+
+    return user
 }
 
 const login = async ({ email, password }) => {

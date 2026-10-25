@@ -91,4 +91,39 @@ const meetingCancellationMessage = ({ recipientName, meetingTitle, scheduledAt, 
     return lines.join('\n')
 }
 
-module.exports = { invitationMessage, meetingSummaryMessage, meetingCancellationMessage }
+const accountRegisteredMessage = ({ recipientName }) =>
+    [
+        `Halo ${recipientName},`,
+        '',
+        'Akun Meeting Management Anda berhasil dibuat dan nomor WhatsApp ini terdaftar pada akun tersebut.',
+        'Nomor ini digunakan untuk notifikasi meeting dan pemulihan password.',
+        '',
+        'Jika Anda tidak merasa mendaftar, abaikan pesan ini atau hubungi Tim IT.',
+        '',
+        '— Meeting Management',
+    ].join('\n')
+
+const phoneUpdatedMessage = ({ recipientName }) =>
+    [
+        `Halo ${recipientName},`,
+        '',
+        'Nomor WhatsApp ini sekarang terdaftar pada akun Meeting Management Anda.',
+        'Nomor ini digunakan untuk notifikasi meeting dan pemulihan password.',
+        '',
+        '— Meeting Management',
+    ].join('\n')
+
+const phoneChangedOldMessage = ({ recipientName }) =>
+    [
+        `Halo ${recipientName},`,
+        '',
+        'Nomor WhatsApp pada akun Meeting Management Anda telah diubah. Nomor ini tidak lagi terhubung dengan akun tersebut.',
+        '',
+        'Jika bukan Anda yang melakukan perubahan ini, segera hubungi Tim IT.',
+        '',
+        '— Meeting Management',
+    ].join('\n')
+
+module.exports = {
+    invitationMessage,meetingSummaryMessage, meetingCancellationMessage, accountRegisteredMessage, phoneUpdatedMessage, phoneChangedOldMessage,
+}

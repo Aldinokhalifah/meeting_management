@@ -9,18 +9,26 @@ Panduan deploy aplikasi Meeting Management ke Windows Server VM menggunakan GUI 
 ```
 Browser (LAN Kantor)
        │
-       ▼
-IIS (port 80) — Reverse Proxy
-       ├── /api/*  → Backend Express.js (localhost:5000)
-       └── /*      → Frontend Next.js   (localhost:3000)
+       ├──► IIS (port 80) — Reverse Proxy
+       │        ├── /api/*  → Backend Express.js (localhost:5000)
+       │        └── /*      → Frontend Next.js   (localhost:3000)
+       │
+       └──► MinIO/Silo (port 9000) — langsung, TIDAK lewat IIS
+                (upload & unduh dokumen pendukung memakai presigned URL)
 
 Backend Express.js (localhost:5000)
        │
        ├── PostgreSQL (localhost:5432)
+       ├── MinIO/Silo (localhost:9000)
        └── Python AI Agent (localhost:8000) — dipanggil internal, tidak lewat IIS
+
+Python AI Agent (localhost:8000)
+       │
+       ├── PostgreSQL (localhost:5432)
+       └── MinIO/Silo (localhost:9000) — hanya untuk menghapus file saat meeting dihapus
 ```
 
-Ketiga service (backend, frontend, AI agent) dijalankan sebagai **Windows Service** via NSSM, sehingga otomatis jalan tanpa perlu terminal manual dan auto-start saat VM restart.
+Keempat service (backend, frontend, AI agent, dan MinIO/Silo untuk penyimpanan dokumen) dijalankan sebagai **Windows Service** via NSSM, sehingga otomatis jalan tanpa perlu terminal manual dan auto-start saat VM restart.
 
 ---
 
@@ -42,7 +50,8 @@ Ketiga service (backend, frontend, AI agent) dijalankan sebagai **Windows Servic
 4.  Setup & test Backend (Express) secara manual
 5.  Setup & test Frontend (Next.js) secara manual
 6.  Setup & test Python AI Agent secara manual
-7.  Install & konfigurasi NSSM (ubah 3 service jadi Windows Service)
+6B. Setup & test MinIO (Silo) untuk dokumen pendukung
+7.  Install & konfigurasi NSSM (ubah 4 service jadi Windows Service)
 8.  Install & konfigurasi IIS (reverse proxy)
 9.  Update environment variables sesuai IP VM
 10. Testing end-to-end
@@ -109,6 +118,8 @@ Jalankan migration:
    ai_summary, index, dll) jika terpisah
 ```
 
+> ⚠️ Jalankan **semua** file di folder `migrations/` secara berurutan (001, 002, 003, dst). Migrasi `003_create_meeting_attachments.sql` membuat tabel `meeting_attachments` untuk fitur dokumen pendukung. Tanpa tabel ini, fitur dokumen tidak berfungsi dan file di MinIO tidak ikut terhapus saat meeting dihapus.
+
 ---
 
 ## 3️⃣ Clone Repository
@@ -153,6 +164,24 @@ FRONTEND_URL=http://<ip-vm>
 OPENROUTER_API_KEY=<your_key>
 OPENROUTER_MODEL=openai/gpt-oss-120b:free
 AGENT_URL=http://localhost:8000
+
+# MinIO (Silo) — penyimpanan dokumen pendukung (lihat bagian 6B)
+MINIO_ENDPOINT=localhost
+MINIO_PORT=9000
+MINIO_USE_SSL=false
+MINIO_ACCESS_KEY=meeting-backend
+MINIO_SECRET_KEY=<secret_user_backend>
+MINIO_BUCKET=meeting-attachments
+MINIO_REGION=us-east-1
+# Alamat yang dibuka BROWSER untuk upload/unduh (bukan localhost!)
+MINIO_PUBLIC_ENDPOINT=<ip-vm>
+MINIO_PUBLIC_PORT=9000
+MINIO_PUBLIC_USE_SSL=false
+MAX_FILE_SIZE=10485760
+MAX_ATTACHMENTS_PER_MEETING=5
+PRESIGN_UPLOAD_EXPIRY=300
+PRESIGN_VIEW_EXPIRY=600
+PENDING_ATTACHMENT_TTL_MINUTES=15
 ```
 
 Test jalan manual:
@@ -214,7 +243,18 @@ OPENROUTER_API_KEY=<your_key>
 OPENROUTER_MODEL=openai/gpt-oss-120b:free
 APP_HOST=0.0.0.0
 APP_PORT=8000
+
+# MinIO (Silo) — hanya untuk menghapus file saat meeting dihapus (lihat bagian 6B)
+MINIO_ENDPOINT=localhost
+MINIO_PORT=9000
+MINIO_USE_SSL=false
+MINIO_ACCESS_KEY=meeting-agent
+MINIO_SECRET_KEY=<secret_user_agent>
+MINIO_BUCKET=meeting-attachments
+MINIO_REGION=us-east-1
 ```
+
+> ⚠️ `DATABASE_URL` agent harus menunjuk ke **database yang sama** dengan backend. Agent membaca dan menghapus data meeting (termasuk daftar dokumen) langsung dari database.
 
 Test jalan manual:
 ```cmd
@@ -224,6 +264,134 @@ python main.py
 Cek `http://localhost:8000/health` di browser VM.
 
 ✅ **Checkpoint:** Pastikan ketiga service sudah bisa jalan manual bersamaan (3 terminal terbuka) dan aplikasi bisa dipakai end-to-end sebelum lanjut ke NSSM.
+
+---
+
+## 6️⃣B Setup & Test MinIO (Silo) — Penyimpanan Dokumen Pendukung
+
+Dokumen pendukung meeting disimpan di MinIO. MinIO resmi sudah tidak menyediakan binary, jadi dipakai **Silo**: fork komunitas yang kompatibel dengan MinIO (API S3, variabel `MINIO_*`, dan format data sama). Halaman rilis: `https://github.com/pgsty/silo/releases`
+
+> ⚠️ **Pasang versi tertentu** (bukan "latest") dan selalu cek checksum. Versi yang sudah diuji dengan aplikasi ini: `RELEASE.2026-09-16T00-00-00Z`. Pantau halaman rilis untuk patch keamanan, dan uji versi baru di laptop dulu sebelum upgrade di VM.
+
+### Download & Ekstrak
+```
+Dari halaman rilis RELEASE.2026-09-16T00-00-00Z, download:
+  silo_20260916000000.0.0_windows_amd64.tar.gz
+  silo_20260916000000.0.0_checksums.txt
+```
+Cek hash (Command Prompt):
+```cmd
+certutil -hashfile silo_20260916000000.0.0_windows_amd64.tar.gz SHA256
+```
+Hasilnya harus sama dengan baris `windows_amd64.tar.gz` di file checksums:
+```
+f99f4c376754aeea50c982afdd7aa3fd62ee9393e0ad603be570055c2342ee41
+```
+Ekstrak dan siapkan folder data:
+```cmd
+mkdir C:\minio
+tar -xzf silo_20260916000000.0.0_windows_amd64.tar.gz -C C:\minio
+mkdir D:\minio-data
+```
+> Folder data (`D:\minio-data`) taruh di disk yang ruangnya cukup, **di luar** folder aplikasi dan folder IIS. Boleh di disk C: kalau tidak ada disk lain.
+
+### Test Jalan Manual
+```cmd
+set MINIO_ROOT_USER=<admin_minio>
+set MINIO_ROOT_PASSWORD=<password_panjang_dan_kuat>
+C:\minio\silo.exe server --address ":9000" --console-address ":9001" D:\minio-data
+```
+> Hindari karakter `& ^ %` di password karena bermasalah di Command Prompt.
+
+Buka `http://localhost:9001` di browser VM dan login dengan user/password di atas.
+
+### Buat Bucket, Policy, dan Access Key
+
+Akun root hanya untuk administrasi. Backend dan agent memakai user sendiri dengan hak akses minimal.
+
+```
+1. Buat bucket: meeting-attachments
+   → biarkan PRIVATE (jangan diberi anonymous/public access)
+
+2. Buat 2 policy (menu Administrator → Policies → Create Policy):
+   a. Nama: meeting-backend-policy  → isi JSON di bawah (a)
+   b. Nama: meeting-agent-policy    → isi JSON di bawah (b)
+
+3. Buat 2 user (menu Identity → Users → Create User):
+   - Username (= access key): meeting-backend
+     Password (= secret key): <secret_user_backend>
+     Policy: meeting-backend-policy
+   - Username (= access key): meeting-agent
+     Password (= secret key): <secret_user_agent>
+     Policy: meeting-agent-policy
+```
+> Nama menu di Console bisa sedikit berbeda antar versi.
+
+**(a) meeting-backend-policy** — backend: upload (via presigned URL), baca, hapus:
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"],
+      "Resource": ["arn:aws:s3:::meeting-attachments/*"]
+    }
+  ]
+}
+```
+
+**(b) meeting-agent-policy** — agent: hanya boleh menghapus file:
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": ["s3:DeleteObject"],
+      "Resource": ["arn:aws:s3:::meeting-attachments/*"]
+    }
+  ]
+}
+```
+> Kalau nama bucket diganti, ubah di 3 tempat: `MINIO_BUCKET` backend, `MINIO_BUCKET` agent, dan `Resource` di kedua policy.
+
+Alternatif lewat command line (`mcli`, dari `https://github.com/pgsty/mc/releases` versi yang sama), kalau menu Console tidak ketemu:
+```cmd
+mcli alias set local http://localhost:9000 <admin_minio> <password_panjang_dan_kuat>
+mcli admin policy create local meeting-backend-policy backend-policy.json
+mcli admin policy create local meeting-agent-policy agent-policy.json
+mcli admin user add local meeting-backend <secret_user_backend>
+mcli admin user add local meeting-agent <secret_user_agent>
+mcli admin policy attach local meeting-backend-policy --user meeting-backend
+mcli admin policy attach local meeting-agent-policy --user meeting-agent
+```
+(`backend-policy.json` dan `agent-policy.json` berisi JSON (a) dan (b) di atas.)
+
+Isi `MINIO_ACCESS_KEY` / `MINIO_SECRET_KEY` di `.env` backend dan agent dengan user masing-masing (bukan akun root). Tekan `Ctrl+C` untuk menghentikan MinIO manual setelah selesai.
+
+### Buka Port 9000 di Firewall
+Browser user mengunggah dan mengunduh file **langsung ke MinIO**, bukan lewat IIS (signature presigned URL mencakup host dan path, jadi tidak boleh dilewatkan proxy dengan prefix).
+```
+Windows Defender Firewall with Advanced Security
+→ Inbound Rules → New Rule → Port → TCP → 9000 → Allow
+→ Name: "MinIO API"
+→ setelah dibuat: klik kanan rule → Properties → tab Scope
+   → Remote IP address → These IP addresses → isi subnet LAN kantor (mis. 192.168.x.0/24)
+```
+> ⚠️ **Jangan buka port 9001 (Console).** Akses Console cukup dari dalam VM lewat Remote Desktop: `http://localhost:9001`.
+
+### CORS
+Browser mengunggah dari alamat aplikasi (`http://<ip-vm>`) ke `http://<ip-vm>:9000`, jadi MinIO harus mengizinkan origin tersebut. Ini diatur lewat environment variable `MINIO_API_CORS_ALLOW_ORIGIN` pada service MinIO (lihat bagian NSSM):
+```
+MINIO_API_CORS_ALLOW_ORIGIN=http://<ip-vm>
+```
+Nilainya harus **persis** alamat yang dipakai user untuk membuka aplikasi (skema + host, tanpa port 80). Kalau aplikasi dibuka lewat nama host, pakai nama host itu.
+
+### Backup Data MinIO
+Dengan satu disk tidak ada redundansi, jadi folder data (`D:\minio-data`) harus masuk rutinitas backup bersama database PostgreSQL, sebaiknya di waktu yang berdekatan. Cara paling aman: hentikan service `meeting-minio` sebentar, salin folder data, lalu start lagi.
+
+✅ **Checkpoint:** dari **laptop lain** di LAN, buka `http://<ip-vm>:9000/minio/health/live`. Halaman kosong tanpa error berarti MinIO bisa dijangkau dan firewall sudah benar.
 
 ---
 
@@ -274,11 +442,34 @@ Startup directory : C:\Users\<username>\Downloads\ai_meeting_management
 Arguments         : app/main.py
 ```
 
+### Install Service — MinIO (Silo)
+```cmd
+C:\nssm\win64\nssm.exe install meeting-minio
+```
+Tab **Application**:
+```
+Path              : C:\minio\silo.exe
+Startup directory : C:\minio
+Arguments         : server --address :9000 --console-address :9001 D:\minio-data
+```
+Tab **Environment** (satu variabel per baris):
+```
+MINIO_ROOT_USER=<admin_minio>
+MINIO_ROOT_PASSWORD=<password_panjang_dan_kuat>
+MINIO_API_CORS_ALLOW_ORIGIN=http://<ip-vm>
+```
+Tab **I/O** (opsional, untuk debugging):
+```
+Output (stdout) : C:\logs\meeting-minio-out.log
+Error (stderr)  : C:\logs\meeting-minio-err.log
+```
+Klik **Install service**.
+
 ### Aktifkan Auto-Start & Jalankan
 
 ```
 Buka services.msc
-Untuk masing-masing service (meeting-backend, meeting-frontend, meeting-agent):
+Untuk masing-masing service (meeting-minio, meeting-backend, meeting-frontend, meeting-agent):
 → Klik kanan → Properties → Startup type: Automatic → OK
 → Klik kanan → Start
 ```
@@ -372,7 +563,10 @@ NEXT_PUBLIC_API_URL=http://<ip-vm>/api
 **Backend `.env`:**
 ```env
 FRONTEND_URL=http://<ip-vm>
+MINIO_PUBLIC_ENDPOINT=<ip-vm>
 ```
+
+**Service MinIO (NSSM):** pastikan `MINIO_API_CORS_ALLOW_ORIGIN=http://<ip-vm>` (lihat bagian 6B). Ubah lewat `nssm edit meeting-minio` → tab Environment, lalu restart `meeting-minio`.
 
 Setelah ubah `.env`:
 ```cmd
@@ -398,6 +592,14 @@ Checklist:
 □ CRUD meeting berfungsi
 □ AI Agent (floating chat) merespon
 □ Pindah-pindah halaman lancar
+
+Dokumen pendukung (uji dari laptop lain, BUKAN dari dalam VM):
+□ Unggah PDF dan gambar di bagian Dokumen Pendukung → progress jalan, file muncul di daftar
+□ Preview PDF/gambar tampil di modal; file Word/Excel bisa diunduh dengan nama yang benar
+□ Ganti nama file .exe menjadi .pdf lalu unggah → ditolak "Verifikasi file gagal"
+□ Participant biasa tidak melihat tombol unggah dan hapus
+□ AI Agent: tanya "dokumen apa saja di meeting X" → menampilkan daftar file
+□ Hapus meeting yang punya dokumen (lewat UI dan lewat AI Agent) → objeknya hilang di Console MinIO
 ```
 
 > 💡 Kalau AI Agent sempat error "not valid JSON" / muncul DOCTYPE HTML tepat setelah restart service — ini biasanya race condition sesaat karena service belum fully ready. Tunggu beberapa detik dan coba lagi; kalau berlanjut terus-menerus baru perlu digali lebih dalam.
@@ -482,6 +684,21 @@ Baru restart service.
 
 ---
 
+### Kalau Ada Update MinIO (Silo)
+
+```
+1. Baca catatan rilis di github.com/pgsty/silo/releases, uji versi baru di
+   laptop dulu (alur dokumen lengkap)
+2. Backup folder data MinIO (lihat bagian 6B)
+3. services.msc → meeting-minio → Stop
+4. Ganti C:\minio\silo.exe dengan versi baru (cek hash SHA256 dulu)
+5. Start meeting-minio, cek http://<ip-vm>:9000/minio/health/live,
+   lalu unggah satu dokumen uji
+```
+> Folder data tidak diubah saat upgrade. Environment variable MinIO ada di NSSM: `nssm edit meeting-minio` → tab Environment, lalu restart service.
+
+---
+
 ### Ringkasan Cepat
 
 | Yang Berubah | `npm/pip install`? | Build Ulang? | Restart Service |
@@ -492,6 +709,8 @@ Baru restart service.
 | Frontend (`.env.local`) | ❌ | ✅ Selalu wajib | ✅ |
 | Python Agent (kode) | Jika ada library baru | ❌ Tidak perlu | ✅ |
 | Python Agent (`.env`) | ❌ | ❌ | ✅ |
+| MinIO (`silo.exe` baru) | ❌ | ❌ | ✅ (`meeting-minio`) |
+| MinIO (env di NSSM) | ❌ | ❌ | ✅ (`meeting-minio`) |
 
 ---
 
@@ -535,6 +754,49 @@ Build ulang, lalu restart service meeting-frontend.
    service settle
 ```
 
+### Upload dokumen dari browser gagal ("Gagal terhubung ke penyimpanan file")
+```
+Biasanya Postman berhasil tapi browser gagal. Cek berurutan:
+1. Dari laptop user, buka http://<ip-vm>:9000/minio/health/live
+   → gagal: port 9000 belum dibuka di firewall (atau scope IP salah)
+2. MINIO_PUBLIC_ENDPOINT di .env backend masih localhost / bukan IP VM
+   → ubah ke <ip-vm>, restart meeting-backend
+3. MINIO_API_CORS_ALLOW_ORIGIN di service meeting-minio tidak sama persis
+   dengan alamat yang dipakai membuka aplikasi → perbaiki, restart meeting-minio
+   (browser mengirim preflight CORS sebelum upload)
+```
+
+### Upload ditolak MinIO (403) / "Izin upload ditolak atau sudah kedaluwarsa"
+```
+1. Link upload hanya berlaku 5 menit — coba unggah ulang
+2. Ukuran file harus persis sama dengan yang dideklarasikan saat presign
+   (otomatis dari browser; kalau lewat Postman, isi file_size dengan ukuran byte asli)
+3. Tipe file ditentukan dari ekstensi nama file; ekstensi harus sesuai isi file
+```
+
+### "Verifikasi file gagal" padahal file valid / "Access Denied" dari MinIO
+```
+1. Isi file harus benar-benar sesuai ekstensinya (PDF asli, bukan hasil rename)
+2. Cek policy user meeting-backend: Action s3:GetObject, s3:PutObject,
+   s3:DeleteObject dan Resource arn:aws:s3:::<nama-bucket>/*
+3. Nama bucket di .env (MINIO_BUCKET) harus sama dengan bucket di MinIO
+   dan dengan Resource di policy
+```
+
+### Service meeting-minio gagal start
+```
+1. Folder data (D:\minio-data) harus sudah ada dan bisa ditulis
+2. Port 9000/9001 tidak dipakai proses lain (cek Task Manager: silo.exe manual yang lupa dimatikan)
+3. Cek log di C:\logs\meeting-minio-err.log
+```
+
+### Preview PDF di modal kosong
+```
+Klik "Buka di tab baru" — kalau PDF tampil di sana, masalahnya hanya di
+tampilan iframe browser. Kalau tetap gagal, cek Network tab browser (F12)
+untuk status request ke http://<ip-vm>:9000/...
+```
+
 ---
 
 ## 📌 Catatan Tambahan
@@ -542,3 +804,6 @@ Build ulang, lalu restart service meeting-frontend.
 - Python AI Agent (port 8000) **tidak perlu** rule IIS — dipanggil langsung oleh backend secara internal via `AGENT_URL=http://localhost:8000` di server yang sama.
 - Simpan kredensial (`JWT_SECRET`, password PostgreSQL, API key) dengan aman, jangan commit `.env` ke Git.
 - Selama masih tahap testing intensif dengan perubahan kode sering, disarankan tetap jalankan service secara manual di terminal (bukan via NSSM) untuk mempermudah debugging — baru pindah ke NSSM + IIS ketika kode sudah dirasa stabil untuk dipakai/didemokan ke orang lain.
+- MinIO/Silo (port 9000) **tidak lewat IIS**: browser berbicara langsung ke port 9000 untuk upload dan unduh dokumen. Port 9001 (Console) tidak dibuka di firewall, akses hanya dari dalam VM.
+- Backend dan agent memakai user MinIO terpisah dengan hak akses minimal (lihat bagian 6B). Akun root MinIO hanya untuk administrasi dan tidak dimasukkan ke `.env` aplikasi.
+- MinIO resmi tidak lagi menyediakan binary, jadi dipakai fork komunitas Silo. Pasang versi tertentu, verifikasi checksum, dan pantau rilis barunya untuk patch keamanan.
