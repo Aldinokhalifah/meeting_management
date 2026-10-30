@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useRegister } from '@/hooks/useAuth'
 import toast from 'react-hot-toast'
+import {validateWhatsappPhone } from '@/lib/phone'
 
 export default function RegisterPage() {
     const router = useRouter();
@@ -28,16 +29,24 @@ export default function RegisterPage() {
         e.preventDefault();
         setError('');
 
-        if (formData.password !== formData.confirmPassword) {
-            setError('Kata sandi tidak cocok');
-            toast.error(error);
-            return;
-        }
-        if (formData.password.length < 6) {
-            setError('Kata sandi minimal 6 karakter');
-            toast.error(error);
-            return;
-        }
+            if (formData.password !== formData.confirmPassword) {
+                setError('Kata sandi tidak cocok');
+                toast.error('Kata sandi tidak cocok');
+                return;
+            }
+
+            if (formData.password.length < 6) {
+                setError('Kata sandi minimal 6 karakter');
+                toast.error('Kata sandi minimal 6 karakter');
+                return;
+            }
+
+            const phoneError = validateWhatsappPhone(formData.whatsapp_phone);
+                if (phoneError) {
+                setError(phoneError);
+                toast.error(phoneError);
+                return;
+            }
 
         setLoading(true);
 
@@ -46,7 +55,7 @@ export default function RegisterPage() {
                 name: formData.name,
                 email: formData.email,
                 password: formData.password,
-                whatsapp_phone: formData.whatsapp_phone
+                whatsapp_phone: formData.whatsapp_phone.trim()
             },
             {
                 onSuccess: () => {
@@ -136,8 +145,9 @@ export default function RegisterPage() {
                     <label htmlFor="whatsapp_phone" className="text-sm font-medium text-gray-700">Nomor Whatsapp</label> <span className="text-red-400">*</span>
                     <input
                         id="whatsapp_phone"
-                        type="text"
-                        placeholder="62849101239"
+                        type="tel"
+                        inputMode="tel"
+                        placeholder="621234567890"
                         name="whatsapp_phone"
                         value={formData.whatsapp_phone}
                         onChange={handleChange}
@@ -146,7 +156,7 @@ export default function RegisterPage() {
                     />
                     </div>
                     <p className="text-xs text-gray-400">
-                        Format tanpa +, contoh: 6281234567890
+                        Contoh: 081234567890 atau 6281234567890. Nomor ini dipakai untuk notifikasi meeting dan pemulihan password.
                     </p>
 
                     <div className="space-y-1.5">

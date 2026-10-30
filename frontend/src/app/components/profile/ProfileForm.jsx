@@ -2,20 +2,22 @@
 
 import { useState, useEffect } from 'react'
 import { useUpdateProfile } from '@/hooks/useUsers'
-import toast from 'react-hot-toast'
 
 const inputClass = "w-full h-10 px-3 rounded-lg border border-gray-300 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition"
 
 export default function ProfileForm({ user, onUpdate }) {
     const { mutate: updateProfile, isPending } = useUpdateProfile()
-    const [form, setForm] = useState({ name: '', email: '' })
+    const [form, setForm] = useState({ name: '', email: '', current_password: '' })
     const [isDirty, setIsDirty] = useState(false)
 
     useEffect(() => {
         if (user) {
-        setForm({ name: user.name ?? '', email: user.email ?? '' })
+        setForm({ name: user.name ?? '', email: user.email ?? '', current_password: '' })
         }
     }, [user])
+
+    // Backend mewajibkan password saat email berubah (perbandingan persis)
+    const emailChanged = form.email !== (user?.email ?? '')
 
     const handleChange = (e) => {
         const { name, value } = e.target
@@ -25,19 +27,24 @@ export default function ProfileForm({ user, onUpdate }) {
 
     const handleSubmit = (e) => {
         e.preventDefault()
-        updateProfile(
-        { name: form.name, email: form.email },
-        {
-            onSuccess: (data) => {
-                setIsDirty(false)
+
+        const body = { name: form.name, email: form.email }
+        if (emailChanged) body.current_password = form.current_password
+
+        updateProfile(body, {
+        onSuccess: (data) => {
+            setIsDirty(false)
             onUpdate?.(data.data)
-            }
-        }
-        )
+        },
+        // Toast error sudah ditangani hook; di sini cukup kosongkan password
+        onError: () => {
+            setForm((prev) => ({ ...prev, current_password: '' }))
+        },
+        })
     }
 
     const handleCancel = () => {
-        setForm({ name: user?.name ?? '', email: user?.email ?? '' })
+        setForm({ name: user?.name ?? '', email: user?.email ?? '', current_password: '' })
         setIsDirty(false)
     }
 
@@ -71,6 +78,27 @@ export default function ProfileForm({ user, onUpdate }) {
             className={inputClass}
             />
         </div>
+
+        {emailChanged && (
+            <div className="space-y-1.5">
+            <label className="text-sm font-medium text-gray-700">
+                Password Saat Ini <span className="text-red-400">*</span>
+            </label>
+            <input
+                name="current_password"
+                type="password"
+                value={form.current_password}
+                onChange={handleChange}
+                placeholder="••••••••"
+                autoComplete="current-password"
+                required
+                className={inputClass}
+            />
+            <p className="text-xs text-gray-400">
+                Diperlukan untuk mengubah email.
+            </p>
+            </div>
+        )}
 
         <div className="space-y-1.5">
             <label className="text-sm font-medium text-gray-700">Bergabung Sejak</label>

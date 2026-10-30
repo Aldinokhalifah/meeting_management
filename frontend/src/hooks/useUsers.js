@@ -3,9 +3,7 @@ import {
     searchUsers,
     updateProfile,
     updatePassword,
-    setWhatsappPhone,
     updateWhatsappPhone,
-    deleteWhatsappPhone,
 } from '@/services/user'
 import toast from 'react-hot-toast'
 
@@ -59,21 +57,6 @@ const syncWhatsappToLocalStorage = (data) => {
     }
 }
 
-export const useSetWhatsappPhone = () => {
-    const queryClient = useQueryClient()
-    return useMutation({
-        mutationFn: (body) => setWhatsappPhone(body),
-        onSuccess: (res) => {
-            toast.success(res.message)
-            syncWhatsappToLocalStorage(res)
-            queryClient.invalidateQueries({ queryKey: ['me'] })
-        },
-        onError: (err) => {
-            toast.error(err.message || 'Gagal menambahkan nomor WhatsApp')
-        },
-    })
-}
-
 export const useUpdateWhatsappPhone = () => {
     const queryClient = useQueryClient()
     return useMutation({
@@ -85,21 +68,6 @@ export const useUpdateWhatsappPhone = () => {
         },
         onError: (err) => {
             toast.error(err.message || 'Gagal memperbarui nomor WhatsApp')
-        },
-    })
-}
-
-export const useDeleteWhatsappPhone = () => {
-    const queryClient = useQueryClient()
-    return useMutation({
-        mutationFn: () => deleteWhatsappPhone(),
-        onSuccess: (res) => {
-            toast.success(res.message)
-            syncWhatsappToLocalStorage(res)
-            queryClient.invalidateQueries({ queryKey: ['me'] })
-        },
-        onError: (err) => {
-            toast.error(err.message || 'Gagal menghapus nomor WhatsApp')
         },
     })
 }

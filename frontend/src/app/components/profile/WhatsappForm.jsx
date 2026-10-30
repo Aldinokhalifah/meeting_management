@@ -1,11 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import {
-    useSetWhatsappPhone,
-    useUpdateWhatsappPhone,
-    useDeleteWhatsappPhone,
-} from '@/hooks/useUsers'
+import { useUpdateWhatsappPhone } from '@/hooks/useUsers'
+import { normalizeWhatsappPhone, validateWhatsappPhone } from '@/lib/phone'
 import toast from 'react-hot-toast'
 
 const inputClass =
@@ -14,18 +11,23 @@ const inputClass =
 export default function WhatsappForm({ user, onUpdate }) {
     const hasPhone = Boolean(user?.whatsapp_phone)
     const [phone, setPhone] = useState('')
+    const [currentPassword, setCurrentPassword] = useState('')
     const [isDirty, setIsDirty] = useState(false)
 
-    const { mutate: setWhatsapp, isPending: isSetting } = useSetWhatsappPhone()
-    const { mutate: updateWhatsapp, isPending: isUpdating } = useUpdateWhatsappPhone()
-    const { mutate: deleteWhatsapp, isPending: isDeleting } = useDeleteWhatsappPhone()
-
-    const isPending = isSetting || isUpdating || isDeleting
+    const { mutate: updateWhatsapp, isPending } = useUpdateWhatsappPhone()
 
     useEffect(() => {
         setPhone(user?.whatsapp_phone ?? '')
+        setCurrentPassword('')
         setIsDirty(false)
     }, [user?.whatsapp_phone])
+
+    const trimmed = phone.trim()
+
+    // Berubah = hasil normalisasi berbeda dari nomor tersimpan (termasuk pengisian pertama kali)
+    const phoneChanged =
+        trimmed !== '' &&
+        normalizeWhatsappPhone(trimmed) !== (user?.whatsapp_phone ?? null)
 
     const handleChange = (e) => {
         setPhone(e.target.value)
@@ -34,40 +36,39 @@ export default function WhatsappForm({ user, onUpdate }) {
 
     const handleSubmit = (e) => {
         e.preventDefault()
-        const trimmed = phone.trim()
-        if (!trimmed) {
-            toast.error('Nomor WhatsApp wajib diisi')
+
+        const phoneError = validateWhatsappPhone(trimmed)
+        if (phoneError) {
+            toast.error(phoneError)
             return
         }
 
-        const payload = { whatsapp_phone: trimmed }
-        const options = {
-            onSuccess: (res) => {
-                setIsDirty(false)
-                onUpdate?.(res.data)
-            },
+        // Nomor sama setelah normalisasi (mis. 08xx vs 62xx): tidak ada yang perlu disimpan
+        if (!phoneChanged) {
+            setPhone(user?.whatsapp_phone ?? '')
+            setIsDirty(false)
+            return
         }
 
-        if (hasPhone) {
-            updateWhatsapp(payload, options)
-        } else {
-            setWhatsapp(payload, options)
-        }
-    }
-
-    const handleDelete = () => {
-        confirm('Yakin menghapus Nomor anda?Tindakan ini bisa dibatalkan');
-        deleteWhatsapp(undefined, {
-            onSuccess: (res) => {
-                setPhone('')
-                setIsDirty(false)
-                onUpdate?.(res.data)
-            },
-        })
+        updateWhatsapp(
+            { whatsapp_phone: trimmed, current_password: currentPassword },
+            {
+                onSuccess: (res) => {
+                    setIsDirty(false)
+                    setCurrentPassword('')
+                    onUpdate?.(res.data)
+                },
+                // Toast error sudah ditangani hook; di sini cukup kosongkan password
+                onError: () => {
+                    setCurrentPassword('')
+                },
+            }
+        )
     }
 
     const handleCancel = () => {
         setPhone(user?.whatsapp_phone ?? '')
+        setCurrentPassword('')
         setIsDirty(false)
     }
 
@@ -75,20 +76,43 @@ export default function WhatsappForm({ user, onUpdate }) {
         <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
                 <label htmlFor="whatsapp_phone" className="text-sm font-medium text-gray-700">
-                    Nomor WhatsApp
+                    Nomor WhatsApp <span className="text-red-400">*</span>
                 </label>
                 <input
                     id="whatsapp_phone"
                     type="tel"
+                    inputMode="tel"
                     value={phone}
                     onChange={handleChange}
-                    placeholder="6281234567890"
+                    placeholder="081234567890"
                     className={inputClass}
                 />
                 <p className="text-xs text-gray-400">
-                    Format tanpa +, contoh: 6281234567890
+                    Contoh: 081234567890 atau 6281234567890. Nomor ini dipakai untuk notifikasi meeting
+                    dan pemulihan password.
                 </p>
             </div>
+
+            {phoneChanged && (
+                <div className="space-y-1.5">
+                    <label htmlFor="whatsapp_current_password" className="text-sm font-medium text-gray-700">
+                        Password Saat Ini <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                        id="whatsapp_current_password"
+                        type="password"
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        placeholder="••••••••"
+                        autoComplete="current-password"
+                        required
+                        className={inputClass}
+                    />
+                    <p className="text-xs text-gray-400">
+                        Diperlukan untuk mengubah nomor WhatsApp.
+                    </p>
+                </div>
+            )}
 
             <div className="flex flex-wrap items-center gap-2">
                 {(isDirty || !hasPhone) && (
@@ -112,17 +136,6 @@ export default function WhatsappForm({ user, onUpdate }) {
                         className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition"
                     >
                         Batal
-                    </button>
-                )}
-
-                {hasPhone && (
-                    <button
-                        type="button"
-                        onClick={handleDelete}
-                        disabled={isPending}
-                        className="px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50 rounded-lg transition"
-                    >
-                        {isDeleting ? 'Menghapus...' : 'Hapus Nomor'}
                     </button>
                 )}
             </div>
