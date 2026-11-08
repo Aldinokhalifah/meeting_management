@@ -130,9 +130,21 @@ const consumeTokenAndSetPassword = async ({ tokenHash, passwordHash }) => {
     }
 };
 
+const findPasswordChangedAtEpoch = async (userId) => {
+    const result = await db.query(
+        `SELECT FLOOR(EXTRACT(EPOCH FROM password_changed_at))::bigint AS changed_at
+        FROM users WHERE id = $1`,
+        [userId]
+    )
+    if (result.rowCount === 0) return undefined
+    const value = result.rows[0].changed_at
+    return value === null ? null : Number(value)
+}
+
 module.exports = {
     findUserForReset,
     issueResetToken,
     isTokenUsable,
     consumeTokenAndSetPassword,
+    findPasswordChangedAtEpoch,
 };
