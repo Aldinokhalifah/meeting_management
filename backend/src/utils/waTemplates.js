@@ -124,6 +124,31 @@ const phoneChangedOldMessage = ({ recipientName }) =>
         '— Meeting Management',
     ].join('\n')
 
+const passwordResetLinkMessage = ({ recipientName, link, ttlMinutes }) =>
+    [
+        `Halo ${recipientName},`,
+        '',
+        'Kami menerima permintaan reset password untuk akun Meeting Management Anda.',
+        `Buka link berikut untuk membuat password baru (berlaku ${ttlMinutes} menit, hanya bisa dipakai sekali):`,
+        '',
+        link,
+        '',
+        '*Jangan bagikan link ini kepada siapa pun.* Jika Anda tidak meminta reset password, abaikan pesan ini.',
+        '',
+        '— Meeting Management',
+    ].join('\n')
+
+const passwordChangedMessage = ({ recipientName }) =>
+    [
+        `Halo ${recipientName},`,
+        '',
+        'Password akun Meeting Management Anda telah diubah.',
+        '',
+        '*Jika bukan Anda yang melakukan ini, segera hubungi Tim IT.*',
+        '',
+        '— Meeting Management',
+    ].join('\n')
+
 module.exports = {
-    invitationMessage,meetingSummaryMessage, meetingCancellationMessage, accountRegisteredMessage, phoneUpdatedMessage, phoneChangedOldMessage,
+    invitationMessage,meetingSummaryMessage, meetingCancellationMessage, accountRegisteredMessage, phoneUpdatedMessage, phoneChangedOldMessage, passwordResetLinkMessage, passwordChangedMessage
 }

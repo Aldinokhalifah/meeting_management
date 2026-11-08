@@ -71,6 +71,7 @@ const ERROR_MAP = {
     ONLY_UPLOADER_CAN_CONFIRM: { status: 403, message: 'Hanya pengunggah yang dapat mengonfirmasi upload' },
     WHATSAPP_PHONE_REQUIRED: { status: 400, message: 'Nomor WhatsApp wajib diisi' },
     CURRENT_PASSWORD_REQUIRED: { status: 400, message: 'Password saat ini wajib diisi untuk mengubah email atau nomor WhatsApp' },
+    TOKEN_INVALID_OR_EXPIRED: { status: 400, message: 'Link reset password tidak valid atau sudah kedaluwarsa. Silakan minta link baru.' },
     'Meeting tidak ditemukan': { status: 404, message: 'Meeting tidak ditemukan' },
     'Kamu tidak memiliki akses ke meeting ini': { status: 403, message: 'Kamu tidak memiliki akses ke meeting ini' },
     'Email tidak ditemukan': { status: 401, message: 'Email tidak ditemukan' },

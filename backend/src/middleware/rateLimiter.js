@@ -38,4 +38,13 @@ const agentLimiter = rateLimit({
     keyGenerator: (req) => req.user?.id || ipKeyGenerator(req.ip), // ← limit per user, bukan per IP
 })
 
-module.exports = { globalLimiter, loginLimiter, registerLimiter, agentLimiter }
+const forgotPasswordLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 menit
+    max: 10,
+    message: { message: 'Terlalu banyak permintaan, coba lagi nanti' },
+    standardHeaders: true,
+    legacyHeaders: false,
+    skip: () => process.env.FORGOT_PASSWORD_IP_LIMIT !== 'true',
+})
+
+module.exports = { globalLimiter, loginLimiter, registerLimiter, agentLimiter, forgotPasswordLimiter }

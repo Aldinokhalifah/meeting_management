@@ -1,5 +1,5 @@
 const { sendWhatsAppText } = require('../config/wa')
-const { invitationMessage, meetingSummaryMessage, meetingCancellationMessage, accountRegisteredMessage, phoneUpdatedMessage, phoneChangedOldMessage, } = require('../utils/waTemplates')
+const { invitationMessage, meetingSummaryMessage, meetingCancellationMessage, accountRegisteredMessage, phoneUpdatedMessage, phoneChangedOldMessage, passwordResetLinkMessage, passwordChangedMessage } = require('../utils/waTemplates')
 const { normalizeIndonesiaWhatsapp } = require('../utils/normalizePhone')
 const tiptapToText = require('../utils/tiptapToText')
 const waRepo = require('../repositories/waRepository')
@@ -195,6 +195,12 @@ const sendPhoneUpdatedWhatsApp = ({ phone, name }) =>
 const sendPhoneChangedOldWhatsApp = ({ phone, name }) =>
     sendToPhone(phone, phoneChangedOldMessage({ recipientName: name }))
 
+const sendPasswordResetLinkWhatsApp = ({ phone, name, link, ttlMinutes }) =>
+    sendToPhone(phone, passwordResetLinkMessage({ recipientName: name, link, ttlMinutes }))
+
+const sendPasswordChangedWhatsApp = ({ phone, name }) =>
+    sendToPhone(phone, passwordChangedMessage({ recipientName: name }))
+
 module.exports = {
     sendInvitationWhatsApp,
     sendMeetingSummaryWhatsApps,
@@ -205,4 +211,6 @@ module.exports = {
     sendAccountRegisteredWhatsApp,
     sendPhoneUpdatedWhatsApp,
     sendPhoneChangedOldWhatsApp,
+    sendPasswordResetLinkWhatsApp,
+    sendPasswordChangedWhatsApp,
 }
