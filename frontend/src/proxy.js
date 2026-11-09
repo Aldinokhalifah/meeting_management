@@ -1,21 +1,24 @@
 import { NextResponse } from 'next/server'
 
 // Route yang tidak butuh auth
-const publicRoutes = ['/Login', '/Register'];
+const publicRoutes = ['/Login', '/Register', '/ForgotPassword', '/ResetPassword'];
+
+const guestOnlyRoutes = ['/Login', '/Register'];
 
 export function proxy(request) {
     const { pathname } = request.nextUrl;
     const token = request.cookies.get('token')?.value;
 
     const isPublicRoute = publicRoutes.includes(pathname);
+    const isGuestOnlyRoute = guestOnlyRoutes.includes(pathname);
 
     // Kalau belum login dan bukan public route → redirect ke login
     if (!token && !isPublicRoute) {
         return NextResponse.redirect(new URL('/Login', request.url));
     }
 
-    // Kalau sudah login dan buka halaman auth → redirect ke dashboard
-    if (token && isPublicRoute) {
+    // Kalau sudah login dan buka halaman khusus tamu → redirect ke dashboard
+    if (token && isGuestOnlyRoute) {
         return NextResponse.redirect(new URL('/dashboard', request.url));
     }
 

@@ -31,3 +31,25 @@ export const logout = () => {
     // Hapus cookie
     document.cookie = 'token=; path=/; max-age=0';
 }
+
+// --- Lupa password via WhatsApp ---
+export const forgotPassword = async ({ email }) => {
+    return await fetchClient('/auth/forgot-password', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+    });
+}
+
+export const validateResetToken = async ({ token }) => {
+    return await fetchClient('/auth/reset-password/validate', {
+        method: 'POST',
+        body: JSON.stringify({ token }),
+    });
+}
+
+export const resetPassword = async ({ token, new_password }) => {
+    return await fetchClient('/auth/reset-password', {
+        method: 'POST',
+        body: JSON.stringify({ token, new_password }),
+    });
+}
