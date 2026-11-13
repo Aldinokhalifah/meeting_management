@@ -12,7 +12,7 @@ export default function FloatingChat() {
     const { messages, isLoading, sendMessage, clearMessages } = useAgent()
 
     // Jangan tampilkan FloatingChat di halaman login dan register
-    if (pathname === '/Login' || pathname === '/Register') {
+    if (pathname === '/Login' || pathname === '/Register' || pathname === '/ForgotPassword' || pathname === '/ResetPassword') {
         return null
     }
 
