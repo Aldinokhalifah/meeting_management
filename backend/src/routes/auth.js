@@ -13,15 +13,5 @@ router.post('/logout', authMiddleware, authController.logout);
 router.post('/forgot-password', forgotPasswordLimiter, passwordResetController.forgotPassword);
 router.post('/reset-password/validate', passwordResetController.validateResetToken);
 router.post('/reset-password', passwordResetController.resetPassword);
-router.get('/debug-ip', (req, res) => {
-    res.json({
-        ip: req.ip,
-        ips: req.ips,
-        xForwardedFor: req.headers['x-forwarded-for'] || null,
-        remoteAddress: req.socket.remoteAddress,
-        trustProxy: req.app.get('trust proxy'),
-        host: req.headers.host,
-    })
-})
 
 module.exports = router;
