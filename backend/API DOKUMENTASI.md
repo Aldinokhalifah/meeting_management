@@ -1,7 +1,7 @@
 # Meeting Management API Documentation
 
 **Base URL:** `http://localhost:5000/api`  
-**Auth:** Semua endpoint (kecuali register & login) membutuhkan header:
+**Auth:** Semua endpoint (kecuali register, login, dan endpoint reset password) membutuhkan header:
 ```
 Authorization: Bearer <token>
 ```
@@ -90,6 +90,87 @@ Login dan dapatkan token JWT.
 |------|---------|
 | 400 | Email dan password wajib diisi |
 | 401 | Email atau password salah |
+
+---
+
+### POST `/auth/forgot-password`
+Meminta link reset password. Jika email terdaftar dan memiliki nomor WhatsApp, link akan dikirim melalui WhatsApp. Endpoint ini tidak membutuhkan autentikasi.
+
+**Body:**
+```json
+{
+  "email": "aldino@test.com"
+}
+```
+
+**Response `200`:**
+```json
+{
+  "message": "Jika email terdaftar dan memiliki nomor WhatsApp, link reset password akan dikirim."
+}
+```
+
+Respons tetap sama baik email terdaftar maupun tidak untuk menjaga privasi akun. Link berlaku selama 30 menit. Permintaan untuk akun yang sama dibatasi dengan cooldown 60 detik dan maksimal 3 kali per jam.
+
+**Errors:**
+| Code | Message |
+|------|---------|
+| 400 | Email wajib diisi |
+| 429 | Terlalu banyak permintaan, coba lagi nanti |
+
+> Batas 429 berdasarkan IP hanya aktif jika environment variable `FORGOT_PASSWORD_IP_LIMIT=true`.
+
+---
+
+### POST `/auth/reset-password/validate`
+Memeriksa apakah token reset masih valid. Validasi ini tidak menggunakan atau menghabiskan token. Endpoint ini tidak membutuhkan autentikasi.
+
+**Body:**
+```json
+{
+  "token": "token_dari_link_reset"
+}
+```
+
+**Response `200`:**
+```json
+{
+  "message": "Link reset password valid"
+}
+```
+
+**Errors:**
+| Code | Message |
+|------|---------|
+| 400 | Link reset password tidak valid atau sudah kedaluwarsa. Silakan minta link baru. |
+
+---
+
+### POST `/auth/reset-password`
+Mengganti password menggunakan token reset yang valid. Token hanya dapat digunakan satu kali. Endpoint ini tidak membutuhkan autentikasi.
+
+**Body:**
+```json
+{
+  "token": "token_dari_link_reset",
+  "new_password": "passwordBaru123"
+}
+```
+
+**Response `200`:**
+```json
+{
+  "message": "Password berhasil diubah. Silakan login dengan password baru."
+}
+```
+
+Setelah password berhasil diubah, token reset menjadi tidak berlaku dan konfirmasi perubahan password dikirim melalui WhatsApp jika nomor tersedia.
+
+**Errors:**
+| Code | Message |
+|------|---------|
+| 400 | Password minimal 6 karakter |
+| 400 | Link reset password tidak valid atau sudah kedaluwarsa. Silakan minta link baru. |
 
 ---
 
